@@ -1,0 +1,12 @@
+---
+- name: ubuntu install
+  include: "ubuntu.yml"
+  when: ansible_distribution == 'Ubuntu'
+  vars:
+    ansible_become: yes
+
+- name: openbsd install
+  include: "openbsd.yml"
+  when: ansible_distribution | lower == 'openbsd'
+  vars:
+    ansible_become: yes

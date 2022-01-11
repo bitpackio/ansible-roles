@@ -1,0 +1,52 @@
+- name: install required packages
+  package:
+    name: "{{ package }}"
+    state: present
+  loop: "{{ webserver_packages[ansible_distribution|lower] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower != 'openbsd'
+
+- name: install required packages
+  community.general.openbsd_pkg:
+    name: "{{ package }}"
+    state: present
+    snapshot: "{{ force_openbsd_snapshot|default(false) }}"
+  loop: "{{ webserver_packages[ansible_distribution|lower] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower == 'openbsd'
+
+- name: create directories
+  file:
+    name: "{{ dir.path }}"
+    state: directory
+    owner: "{{ dir.owner }}"
+  loop: "{{ webserver_directories[ansible_distribution|lower] }}"
+  loop_control:
+    loop_var: dir
+
+- name: setup htpasswd file
+  htpasswd:
+    name: "{{ user.name }}"
+    state: "{{ user.state|default('present') }}"
+    password: "{{ user.password }}"
+    path: "{{ webserver_htpasswd_file[ansible_distribution|lower].path }}"
+    owner: "{{ webserver_htpasswd_file[ansible_distribution|lower].owner }}"
+    group: "{{ webserver_htpasswd_file[ansible_distribution|lower].group }}"
+    mode: "{{ webserver_htpasswd_file[ansible_distribution|lower].mode }}"
+    crypt_scheme: "{{ webserver_htpasswd_file[ansible_distribution|lower].crypt_scheme }}"
+  loop: "{{ webserver_htpasswd_users }}"
+  loop_control:
+    loop_var: user
+
+- name: "ensure {{ cfg.line }} is in {{ cfg.path }}"
+  lineinfile:
+    path: "{{ cfg.path }}"
+    line: "{{ cfg.line }}"
+    regexp: "{{ cfg.regexp }}"
+    create: yes
+  loop: "{{ webserver_config_insertions[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: cfg
+  notify: reload httpd

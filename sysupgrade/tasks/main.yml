@@ -1,0 +1,6 @@
+---
+- name: run openbsd specific include taks
+  include_tasks: openbsd.yml
+  when: ansible_distribution == 'OpenBSD'
+  tags:
+    - sysupgrade

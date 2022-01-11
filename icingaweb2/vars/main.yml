@@ -1,0 +1,27 @@
+icingaweb2_repo:
+  name: icingaweb2-repo
+  key:
+    url: https://packages.icinga.com/icinga.key
+  repo: "deb https://packages.icinga.com/ubuntu icinga-bionic main"
+
+icingaweb2_packages_openbsd:
+  - rsync
+  - icinga-web2
+  - php-curl%7.4
+
+icingaweb2_packages:
+  - apache2
+  - libapache2-mod-php
+  - icingaweb2
+  - icingacli
+
+icingaweb2_systemd_services:
+  - apache2
+
+icingaweb2_group:
+  name: icingaweb2
+
+icingaweb2_user:
+  name: www-data
+  groups:
+    - icingaweb2

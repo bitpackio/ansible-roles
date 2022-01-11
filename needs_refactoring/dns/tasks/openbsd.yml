@@ -1,0 +1,46 @@
+---
+- name: unbound.conf
+  template:
+    src: unbound.conf
+    dest: /var/unbound/etc/unbound.conf
+    owner: root
+    group: wheel
+    mode: 0644
+  notify: reload unbound
+- name: nsd.conf
+  template:
+    src: nsd.conf
+    dest: /var/nsd/etc/nsd.conf
+    owner: root
+    group: _nsd
+    mode: 0640
+  notify: reload nsd
+- name: forward zonefile(s)
+  template: 
+    src: zonefile.forward
+    dest: "/var/nsd/zones/{{ item.role }}/{{ item.name }}"
+    owner: root
+    group: _nsd
+    mode: 0640
+  with_items: 
+    - "{{ dns_zones }}"
+  notify: reload zonefiles
+- name: pf rules
+  lineinfile:
+    path: /etc/anchors/ansible
+    line: "{{ item }}"
+  notify: reload pf
+  with_items:
+    - "pass in inet proto udp to port 53"
+    - "pass out inet proto udp from port 53"
+    - "pass in on internal inet proto udp to port 53 rdr-to 127.0.0.1 port 5353"
+- name: nsd started and enabled
+  service:
+    name: nsd
+    state: started
+    enabled: true
+- name: unbound started and enabled
+  service:
+    name: unbound
+    state: started
+    enabled: true

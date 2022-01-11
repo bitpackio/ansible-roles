@@ -1,0 +1,32 @@
+pki {{ mailserver_fqdn }} cert "{{ mailserver_tls_cert }}"
+pki {{ mailserver_fqdn }} key "{{ mailserver_tls_key }}"
+
+filter check_dyndns phase connect match rdns regex { '.*\.dyn\..*', '.*\.dsl\..*' } \
+    disconnect "550 no residential connections"
+
+filter check_rdns phase connect match !rdns \
+    disconnect "550 no rDNS is so 80s"
+
+filter check_fcrdns phase connect match !fcrdns \
+    disconnect "550 no FCrDNS is so 80s"
+
+filter senderscore \
+    proc-exec "filter-senderscore -blockBelow {{ mailserver_senderscore_block }} -junkBelow {{ mailserver_senderscore_junk }} -slowFactor 5000"
+
+filter rspamd proc-exec "filter-rspamd"
+
+table aliases file:/etc/mail/aliases
+
+listen on all tls pki {{ mailserver_fqdn }} \
+    filter { check_dyndns, check_rdns, check_fcrdns, senderscore, rspamd }
+
+listen on all port submission tls-require pki {{ mailserver_fqdn }} auth filter rspamd
+
+action "local_mail" maildir junk alias <aliases>
+action "outbound" relay helo {{ mailserver_fqdn }}
+
+match from any for domain "{{ mailserver_domain }}" action "local_mail"
+match for local action "local_mail"
+
+match from any auth for any action "outbound"
+match for any action "outbound"

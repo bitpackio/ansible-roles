@@ -1,0 +1,21 @@
+---
+- name: ipv4 forwarding
+  sysctl:
+    name: net.inet.ip.forwarding
+    value: 1
+    state: present
+    reload: yes
+- name: ipv6 forwarding
+  sysctl:
+    name: net.inet6.ip6.forwarding
+    value: 1
+    state: present
+    reload: yes
+- name: pf rules
+  lineinfile:
+    path: /etc/anchors/ansible
+    line: "{{ item }}"
+  with_items:
+    - "match out on egress from !egress nat-to egress:0"
+    - "pass out on egress from egress:0"
+  notify: reload pf

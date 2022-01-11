@@ -1,0 +1,12 @@
+tcp_port_monitoring:
+    autodetect_ports: true
+    no_autodetect_port_list:
+        - "22"
+        - "ports have to be strings"
+icinga2_monitoring_master:
+    host: monitoring.example.com
+    api_port: 5665
+    api_user: root
+    api_password: SomePassword
+    ssh_user: _icinga2
+    ssh_pubkey: 'ssh-rsa XXXX'

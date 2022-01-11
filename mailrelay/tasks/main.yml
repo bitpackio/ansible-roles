@@ -1,0 +1,12 @@
+---
+- name: OpenBSD mailrelay setup
+  include_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+  vars:
+    ansible_become: yes
+
+- name: Ubuntu mailrelay setup
+  include_tasks: ubuntu.yml
+  when: ansible_distribution|lower == 'ubuntu'
+  vars:
+    ansible_become: yes

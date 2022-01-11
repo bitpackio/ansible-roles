@@ -1,0 +1,21 @@
+---
+- name: create admin users
+  user:
+    name: '{{ item }}'
+    groups: wheel
+    state: present
+  with_items: "{{ admin_users }}"
+  when: ansible_distribution|lower == 'openbsd'
+- name: deploy authorized_keys
+  authorized_key:
+    user: "{{ item }}"
+    key: "{{ lookup('file', item + '.pub') }}"
+    state: present
+  with_items: "{{ admin_users }}"
+- name: deploy vimrc
+  copy:
+    src: vimrc
+    dest: /home/mw/.vimrc
+    owner: mw
+    group: mw
+    mode: 0644

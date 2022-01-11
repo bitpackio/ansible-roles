@@ -1,0 +1,173 @@
+---
+- name: install packages
+  openbsd_pkg:
+    name: "{{ icingaweb2_packages_openbsd }}"
+
+- name: add icingaweb2 group
+  group:
+    name: "{{ icingaweb2_group.name }}"
+    system: yes
+    state: present
+
+- name: ensure icingaweb2 user is in icingaweb2 group
+  user:
+    name: "{{ icingaweb2_user.name }}"
+    groups: "{{ icingaweb2_user.groups }}"
+    state: present
+
+- name: create icingaweb2 mysql db
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icingaweb2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: present
+    target: "{{ icingaweb2_mysql_db.schema_openbsd }}"
+  register: db_created
+
+- name: import mysql schema
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: import
+    target: "{{ icingaweb2_mysql_db.schema_openbsd }}"
+  when: db_created.changed
+
+- name: create mysql users
+  mysql_user:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icingaweb2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.user }}"
+    password: "{{ icingaweb2_mysql_db.password }}"
+    priv: "{{ icingaweb2_mysql_db.name }}.*:ALL"
+    state: present
+
+- name: create config dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /var/www/etc
+    - /var/www/etc/icingaweb2
+
+- name: copy hosts file to httpd chroot
+  copy:
+    src: hosts
+    dest: /var/www/etc/hosts
+
+- name: deploy /etc/icingaweb2 skeleton files
+  copy:
+    src: etc/icingaweb2/
+    dest: /var/www/etc/icingaweb2/
+
+- name: configure icingaweb2 resources
+  template:
+    src: resources.ini
+    dest: /var/www/etc/icingaweb2/resources.ini
+
+- name: configure icingaweb2 command transport
+  template:
+    src: commandtransports.ini
+    dest: /var/www/etc/icingaweb2/modules/monitoring/commandtransports.ini
+
+- name: copy sql script for icingaweb2 user creation
+  template:
+    src: icingaweb-admin.sql
+    dest: /tmp/icingaweb-admin.sql
+
+- name: create icingaweb2 admin user
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: import
+    target: /tmp/icingaweb-admin.sql
+  ignore_errors: yes
+
+- name: enable icingaweb2 modules
+  command: "icingacli module enable {{ item }}"
+  loop: "{{ icingaweb2_modules }}"
+
+- name: write httpd config
+  template:
+    dest: /etc/httpd.conf.icingaweb2
+    src: httpd.conf
+  notify: restart_httpd
+
+- name: write relayd config
+  template:
+    dest: /etc/relayd.conf
+    src: relayd.conf
+  notify: restart_relayd
+
+- name: copy php-fpm config
+  copy:
+    src: php-fpm.conf
+    dest: /etc/php-fpm.d/icingaweb2.conf
+  notify: restart_php_fpm
+
+- name: activate pdo_mysql in php.conf
+  lineinfile:
+    path: /etc/php-7.4.ini
+    regexp: '^.*extension.*=.*pdo_mysql.*$'
+    line: 'extension=pdo_mysql'
+  notify: restart_php_fpm
+
+- name: activate curl in php.conf
+  lineinfile:
+    path: /etc/php-7.4.ini
+    regexp: '^.*extension.*=.*curl.*$'
+    line: 'extension=curl'
+  notify: restart_php_fpm
+
+- name: set timezone in php.ini
+  lineinfile:
+    path: /etc/php-7.4.ini
+    regexp: '^.*date.timezone.*=.*$'
+    line: 'date.timezone = Europe/Berlin'
+  notify: restart_php_fpm
+
+- name: include icingaweb2 config in httpd.conf
+  lineinfile:
+    path: /etc/httpd.conf
+    regexp: '^include.*/etc/httpd.conf.icingaweb2.*$'
+    line: 'include "/etc/httpd.conf.icingaweb2"'
+  notify: restart_httpd
+
+- name: disable default config
+  lineinfile:
+    path: /etc/httpd.conf
+    regexp: '^include.*/etc/httpd.conf.default.*$'
+    state: absent
+  notify: restart_httpd
+
+- name: set permission on /etc/icingaweb2
+  file:
+    path: /var/www/etc/icingaweb2
+    state: directory
+    recurse: yes
+    owner: _icingaweb2
+    group: icingaweb2
+
+- name: enable and start httpd and php-fpm
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - php74_fpm
+    - httpd
+
+- name: ensure relayd and httpd are enabled and started
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - httpd
+    - relayd

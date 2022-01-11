@@ -1,0 +1,15 @@
+- name: reload nsd
+  service: 
+    name: nsd
+    state: reloaded
+    enabled: true
+- name: reload unbound
+  service: 
+    name: nsd
+    state: reloaded
+    enabled: true
+- name: reload zonefiles
+  command: nsd-control reload
+  notify: notify slaves
+- name: notify slaves
+  command: nsd-control notify

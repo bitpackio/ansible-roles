@@ -1,0 +1,18 @@
+---
+- name: "Kubernetes | Copy gitea yaml files"
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item }}"
+  with_items:
+    - gitea.yml
+- name: "Kubernetes | Deploying gitea: {{ item }}"
+  shell: "kubectl apply -f /tmp/{{ item }} && sleep 10"
+  with_items:
+    - gitea.yml
+- name: "Helm | Check if concourse is installed"
+  command: helm status concourse
+  register: concourse_installed
+  ignore_errors: yes
+- name: "Helm | Install concourse"
+  command: helm install --namespace gitea --name concourse stable/concourse
+  when: concourse_installed.rc != 0

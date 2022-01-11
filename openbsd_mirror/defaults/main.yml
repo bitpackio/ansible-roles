@@ -1,0 +1,6 @@
+---
+mirror: "ftp.hostserver.de"
+mirror_root: "/var/www/htdocs/pub"
+mirror_targets:
+    - "OpenBSD/6.9/amd64"
+    - "OpenBSD/snapshots/amd64"

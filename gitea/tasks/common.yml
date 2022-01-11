@@ -1,0 +1,96 @@
+---
+- name: "install package: {{ package }}"
+  package:
+    name: "{{ package }}"
+    state: latest
+  loop: "{{ gitea_packages[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower != "openbsd"
+
+- name: "install package: {{ package }}"
+  community.general.openbsd_pkg:
+    name: "{{ package }}"
+    state: latest
+    snapshot: "{{ force_openbsd_snapshot|default(false) }}"
+  loop: "{{ gitea_packages[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower == "openbsd"
+
+- name: set groups
+  user:
+    name: "{{ user.user }}"
+    groups: "{{ user.groups }}"
+    append: yes
+  loop: "{{ gitea_groups[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: user
+
+- name: set gitea permission
+  file:
+    path: "{{ file.path }}"
+    mode: "{{ file.mode }}"
+    state: "{{ file.state }}"
+  loop: "{{ gitea_permissions[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: file
+
+- name: "edit ini files"
+  ini_file:
+    path: "{{ config.path }}"
+    section: "{{ config.section }}"
+    option: "{{ config.option }}"
+    value: "{{ config.value }}"
+  loop: "{{ gitea_ini_values[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: config
+  notify: restart_gitea
+- name: "ensure {{ cfg.line }} is in {{ cfg.path }}"
+  lineinfile:
+    path: "{{ cfg.path }}"
+    line: "{{ cfg.line }}"
+    regexp: "{{ cfg.regexp }}"
+  loop: "{{ gitea_config_insertions[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: cfg
+  notify: restart_gitea
+
+- name: "template {{ cfg.path }}"
+  template:
+    src: "{{ cfg.template }}"
+    dest: "{{ cfg.path }}"
+  loop: "{{ gitea_config_templates[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: cfg
+  notify: restart_httpd
+  when: gitea_httpd
+
+- name: create initialization lock file
+  copy:
+    dest: /etc/gitea/initialized
+    content: ""
+  register: gitea_init
+    
+- name: "initialize database"
+  shell: doas -u _gitea gitea migrate -c /etc/gitea/app.ini
+  environment: "{{ gitea_environment[ ansible_distribution|lower ] }}"
+  when: gitea_init.changed
+
+- name: "create admin users"
+  shell: "doas -u _gitea gitea admin user create -c /etc/gitea/app.ini --admin --username {{ user.name }} --email {{ user.email }} --password {{ user.password }}"
+  register: gitea_user_data
+  when: gitea_init.changed
+  notify: restart_gitea
+  loop: "{{ gitea_admins }}"
+  loop_control:
+    loop_var: user
+
+- name: "start and enable: {{ service }}"
+  service:
+    name: "{{ service }}"
+    enabled: True
+    state: started
+  loop: "{{ gitea_services[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: service 

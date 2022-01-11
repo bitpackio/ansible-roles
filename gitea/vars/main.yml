@@ -1,0 +1,62 @@
+gitea_http: "{{ 'http' if not gitea_tls_cert else 'https' }}"
+gitea_environment:
+    openbsd:
+        HOME: /var/gitea
+        GITEA_WORK_DIR: /usr/local/share/gitea
+        GITEA_CUSTOM: /var/gitea/custom
+        USER: _gitea
+gitea_groups:
+    openbsd:
+        - user: _gitea
+          groups: daemon
+gitea_permissions:
+    openbsd:
+        - path: /var/www/run
+          mode: "0775"
+          state: directory
+gitea_packages:
+    openbsd:
+        - gitea
+
+gitea_services:
+    openbsd:
+        - gitea
+        - gitdaemon
+
+gitea_ini_values:
+    openbsd:
+        - path: /etc/gitea/app.ini
+          section: security
+          option: INSTALL_LOCK
+          value: "true"
+        - path: /etc/gitea/app.ini
+          section: server
+          option: HTTP_ADDR
+          value: /var/www/run/gitea.sock
+        - path: /etc/gitea/app.ini
+          section: server
+          option: PROTOCOL
+          value: fcgi+unix
+        - path: /etc/gitea/app.ini
+          section: server
+          option: DOMAIN
+          value: "{{ gitea_fqdn }}"
+        - path: /etc/gitea/app.ini
+          section: server
+          option: ROOT_URL
+          value: "{{ gitea_http }}://{{ gitea_fqdn }}/"
+        - path: /etc/gitea/app.ini
+          section: server
+          option: LOCAL_ROOT_URL
+          value: "https://{{ gitea_fqdn }}/"
+gitea_config_insertions:
+    openbsd:
+        - path: /etc/httpd.conf
+          line: 'include "/etc/httpd.conf.gitea"'
+          regexp: '^.*include.*"/etc/httpd.conf.gitea".*$'
+
+
+gitea_config_templates:
+    openbsd:
+        - path: /etc/httpd.conf.gitea
+          template: httpd.conf.gitea.j2

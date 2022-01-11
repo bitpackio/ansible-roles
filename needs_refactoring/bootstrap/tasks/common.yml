@@ -1,0 +1,45 @@
+---
+- name: deploy ansible ssh key
+  authorized_key:
+          user: "{{ service_account }}"
+          state: present
+          key: "{{ lookup('file', ansible_ssh_public_key_file) }}"
+  register: add_identity_key
+
+- name: disable empty password ssh logins
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PermitEmptyPasswords" 
+              line="PermitEmptyPasswords no" 
+              state=present
+  notify: restart_sshd
+- name: disable empty password ssh logins
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PermitEmptyPasswords (?!no)" 
+              state=absent
+  notify: restart_sshd
+- name: disable password ssh logins
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PasswordAuthentication"
+              line="PasswordAuthentication no"
+              state=present
+  when: add_identity_key is success
+  notify: restart_sshd
+- name: disable password ssh logins
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PasswordAuthentication (?!no)"
+              state=absent
+  when: add_identity_key is success
+  notify: restart_sshd
+- name: disable ssh root login 
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PermitRootLogin" 
+              line="PermitRootLogin no"
+              state=present
+  when: add_identity_key is success
+  notify: restart_sshd
+- name: disable ssh root login 
+  lineinfile: dest={{ sshd_config }} 
+              regexp="^PermitRootLogin (?!no)" 
+              state=absent
+  when: add_identity_key is success
+  notify: restart_sshd

@@ -1,0 +1,6 @@
+---
+- name: OpenBSD dns
+  include_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+  vars:
+    ansible_become: yes

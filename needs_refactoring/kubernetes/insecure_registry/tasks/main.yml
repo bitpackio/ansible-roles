@@ -1,0 +1,5 @@
+- name: Deploy daemon.json from template
+  template: 
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify: restart_docker

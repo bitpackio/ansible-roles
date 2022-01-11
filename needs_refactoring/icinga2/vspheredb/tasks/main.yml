@@ -1,0 +1,69 @@
+---
+- name: Install dependencies
+  package:
+    name: "{{ item }}"
+    state: installed
+  loop: "{{ packages }}"
+
+- name: Download modules from github
+  git:
+    repo: "https://github.com/Icinga/icingaweb2-module-{{ item.name }}.git"
+    dest: "{{ modules_dir }}/{{ item.name }}"
+    update: no
+    version: "{{ item.version }}"
+  loop: "{{ modules }}"
+  ignore_errors: yes
+  tags: minimal
+
+- name: enable modules
+  shell: "icingacli module enable {{ item.name }}"
+  loop: "{{ modules }}"
+  tags: minimal
+
+- name: check systemd service file exists
+  stat: 
+    path: /etc/systemd/system/icinga-vspheredb.service
+  register: stat_systemd
+  ignore_errors: yes
+
+- name: copy systemd service file
+  copy:
+    src: icinga-vspheredb.service
+    dest: /etc/systemd/system/icinga-vspheredb.service
+  when: stat_systemd.stat.exists == False
+
+- name: systemctl daemon-reload
+  command: "systemctl daemon-reload"
+  when: stat_systemd.stat.exists == False
+
+- name: create mysql dbs
+  mysql_db:
+    name: "{{ item.name }}"
+    state: present
+    target: "{{ item.schema }}"
+  loop: "{{ mysql_dbs }}"
+  register: dbs_created
+- name: create mysql dbs
+  mysql_db:
+    name: "{{ item.name }}"
+    state: import
+    target: "{{ item.schema }}"
+  loop: "{{ mysql_dbs }}"
+  when: dbs_created.changed
+
+- name: create mysql users
+  mysql_user:
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.name }}.*:ALL"
+    state: present
+  loop: "{{ mysql_dbs }}"
+
+- name: create vspheredb config dir
+  file:
+    path: /etc/icingaweb2/modules/vspheredb/
+    state: directory
+- name: copy vspheredb config
+  copy:
+    src: config.ini
+    dest: /etc/icingaweb2/modules/vspheredb/config.ini

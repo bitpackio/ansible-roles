@@ -1,0 +1,24 @@
+---
+- name: bootstrap done
+  set_fact:
+    bootstrapped: true
+  changed_when: "bootstrapped == true"
+  notify: update vm.conf
+- name: update vm.conf
+  template:
+    src: vm.conf
+    dest: /etc/vm.conf
+    owner: root
+    group: wheel
+    mode: '0640'
+  notify: unset bootstrap variable
+- name: unset bootstrap variable
+  set_fact:
+    bootstrapped: false
+  changed_when: "bootstrapped == false"
+  notify: reload vmd
+- name: reload vmd
+  service:
+    name: vmd
+    state: reloaded
+    enabled: true

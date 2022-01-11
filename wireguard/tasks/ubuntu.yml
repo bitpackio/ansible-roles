@@ -1,0 +1,11 @@
+---
+- name: add wireguard ppa
+  apt_repository:
+    repo: ppa:wireguard/wireguard
+- name: install linux headers
+  shell: apt-get install -y linux-headers-$(uname -r)
+- name: install wireguard
+  apt:
+    name: [ "wireguard-dkms", "wireguard-tools" ]
+    state: present
+  register: wg_installed

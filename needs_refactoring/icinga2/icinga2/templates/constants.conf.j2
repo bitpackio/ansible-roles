@@ -1,0 +1,10 @@
+// {{ ansible_managed }}
+
+/**
+ * This file defines global constants which can be used in
+ * the other configuration files.
+ */
+
+{% for name, value in i2_constants.items() %}
+const {{ name }} = "{{ value }}"
+{% endfor %}

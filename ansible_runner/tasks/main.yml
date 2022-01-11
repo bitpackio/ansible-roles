@@ -1,0 +1,72 @@
+- name: create user
+  become: yes
+  user:
+    name: "{{ ansible_runner_user }}"
+    shell: "/sbin/nologin"
+    home: "{{ ansible_runner_home }}"
+
+- name: install packages
+  become: yes
+  community.general.openbsd_pkg:
+    name: [ "git", "ansible" ]
+    state: present
+    snapshot: "{{ force_openbsd_snapshot | default(false) }}"
+
+- name: create ssh key
+  become: yes
+  openssh_keypair:
+    path: "{{ ansible_runner_home }}/.ssh/id_rsa"
+    owner: "{{ ansible_runner_user }}"
+
+- name: clone deployments
+  become: yes
+  git:
+    key_file: "{{ ansible_runner_home }}/.ssh/id_rsa"
+    accept_hostkey: yes
+    repo: "{{ deployment.repo }}"
+    dest: "{{ ansible_runner_home }}/{{ deployment.name }}"
+  loop: "{{ ansible_runner_schedule }}"
+  loop_control:
+    loop_var: deployment
+
+- name: set permissions
+  become: yes
+  file:
+    path: "{{ ansible_runner_home }}/{{ deployment.name }}"
+    owner: "{{ ansible_runner_user }}"
+    recurse: yes
+  loop: "{{ ansible_runner_schedule }}"
+  loop_control:
+    loop_var: deployment
+
+- name: setup run scripts
+  become: yes
+  template:
+    src: run_deployment.sh
+    dest: "{{ ansible_runner_home }}/{{ deployment.name }}/run_deployment.sh"
+    mode: '0750'
+    owner: "{{ ansible_runner_user }}"
+  loop: "{{ ansible_runner_schedule }}"
+  loop_control:
+    loop_var: deployment
+
+- name: setup cron jobs
+  become: yes
+  cron:
+    user: "{{ ansible_runner_user }}"
+    name: "{{ deployment.name }}"
+    job: "{{ ansible_runner_home }}/{{ deployment.name }}/run_deployment.sh"
+    minute: "{{ deployment.minute }}"
+    hour: "{{ deployment.hour }}"
+    weekday: "{{ deployment.weekday }}"
+  loop: "{{ ansible_runner_schedule }}"
+  loop_control:
+    loop_var: deployment
+
+- name: setup mail alias
+  become: yes
+  lineinfile:
+    path: /etc/mail/aliases
+    line: "{{ ansible_runner_user }}: {{ ansible_runner_mailto }}"
+    regexp: "^.*{{ ansible_runner_user }}.*$"
+  notify: update_aliases

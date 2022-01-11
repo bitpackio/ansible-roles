@@ -1,0 +1,7 @@
+---
+fqdn: "{{ ansible_fqdn }}"
+webroot: "/var/www/htdocs"
+tls: False
+tls_certificate: "/etc/ssl/{{ fqdn }}.fullchain.pem"
+tls_key: "/etc/ssl/private/{{ fqdn }}.key"
+letsencrypt_staging: True

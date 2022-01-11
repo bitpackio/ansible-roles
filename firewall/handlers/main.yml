@@ -1,0 +1,16 @@
+---
+- name: reload facts
+  setup:
+- name: reload pf for real
+  shell: pfctl -f /etc/pf.conf
+  become: yes
+- name: reload pf
+  shell: pfctl -nf /etc/pf.conf
+  notify: reload pf for real
+  become: yes
+- name: reload network 
+  shell: sh /etc/netstart
+  become: yes
+- name: iptables-save-ubuntu
+  command: netfilter-persistent save
+  become: yes

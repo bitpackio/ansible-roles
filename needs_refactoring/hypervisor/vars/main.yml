@@ -1,0 +1,43 @@
+---
+openbsd_version: "snapshots"
+openbsd_mirror: "ftp.hostserver.de"
+localmirror: "10.1.0.254"
+vm_dir: /home/vm
+vm_interfaces:
+    - name: "vether0"
+      ip: "10.0.0.254"
+      netmask: "255.255.255.0"
+      desc: "internal"
+      group: "internal"
+    - name: "vether1"
+      ip: "10.1.0.254"
+      netmask: "255.255.255.0"
+      desc: "dmz"
+      group: "internal"
+    - name: "bridge0"
+      members:
+        - "vether0"
+    - name: "bridge1"
+      members:
+        - "vether1"
+dhcpd_nets:
+    - name: "internal"
+      interface: "vether0"
+      subnet: "10.0.0.0"
+      netmask: "255.255.255.0"
+      range: "10.0.0.100 10.0.0.200"
+      router: "10.0.0.254"
+      dns: "10.0.0.254"
+    - name: "dmz"
+      interface: "vether1"
+      subnet: "10.1.0.0"
+      netmask: "255.255.255.0"
+      range: "10.1.0.100 10.1.0.200"
+      router: "10.1.0.254"
+      dns: "10.1.0.254"
+vm_network:
+    - name: "internal"
+      interface: "bridge0"
+    - name: "dmz"
+      interface: "bridge1"
+bootstrapped: false

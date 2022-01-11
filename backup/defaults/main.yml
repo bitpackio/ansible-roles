@@ -1,0 +1,28 @@
+---
+backup_mail_to: "root@localhost"
+backup_mail_from: "backup"
+
+backup_user: "root"
+backup_password: "BACKUP PASSWORD"
+
+backup_directories:
+    - /home
+    - /etc
+    - /var
+
+backup_destination: "sftp:user@host:/path/to/restic-repo"
+
+backup_throttle: 2
+
+backup_keep_policy:
+    daily: 7
+    weekly: 5
+    monthly: 12
+    yearly: 1
+
+backup_pre_commands:
+    - rcctl stop gitea gitdaemon
+
+backup_post_commands:
+    - rcctl start gitdaemon gitea
+

@@ -1,0 +1,41 @@
+- name: manage users
+  user:
+    name: "{{ user.name }}"
+    state: "{{ user.state|default('present') }}"
+    groups: "{{ user.groups }}"
+    shell: "{{ user.shell|default('/bin/bash') }}"
+  loop: "{{ bootstrap_users }}"
+  loop_control:
+    loop_var: user
+
+- name: manage authorized_keys
+  authorized_key:
+    user: "{{ user.name }}"
+    state: "{{ user.state }}"
+    key: "{{ user.authorized_keys | join('\n') }}"
+  loop: "{{ bootstrap_users }}"
+  loop_control:
+    loop_var: user
+
+- name: disable ssh password logins
+  lineinfile:
+    path: "{{ bootstrap_sshd_config[ansible_distribution|lower] }}"
+    regex: ^(# *)?PasswordAuthentication
+    line: PasswordAuthentication no
+  notify: restart sshd
+
+- name: disable ssh root login
+  lineinfile:
+    path: "{{ bootstrap_sshd_config[ansible_distribution|lower] }}"
+    regex: ^(# *)?PermitRootLogin
+    line: PermitRootLogin no
+  notify: restart sshd
+
+- name: setup alias for root mails
+  lineinfile:
+    path: "{{ bootstrap_aliases_file[ansible_distribution|lower] }}"
+    regex: '^( *)?root:.*$'
+    line: "root: {{ bootstrap_root_mail }}"
+  register: bootstrap_mail_alias
+  notify: bootstrap_reload_aliases
+  when: "ansible_distribution|lower in bootstrap_aliases_file"

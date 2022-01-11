@@ -1,0 +1,15 @@
+{% if item.ip is defined %}
+{% if item.ip == "dhcp" %}
+inet {{ item.ip }} description "{{ item.desc }}"
+{% else %}
+inet {{ item.ip }} {{ item.netmask }} NONE description "{{ item.desc }}"
+{% endif %}
+{% elif item.members is defined %}
+{% for member in item.members %}
+add {{ member }}
+{% endfor %}
+{% endif %}
+{% if item.group is defined %}
+group "{{ item.group }}"
+{% endif %}
+up

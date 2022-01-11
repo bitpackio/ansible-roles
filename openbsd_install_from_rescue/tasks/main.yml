@@ -1,0 +1,5 @@
+- name: run openbsd install tasks
+  include_tasks: openbsd_install.yml
+  vars:
+    ansible_become: yes
+  when: ansible_distribution != "OpenBSD"

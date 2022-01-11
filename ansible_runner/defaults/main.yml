@@ -1,0 +1,10 @@
+ansible_runner_mailto: root@localhost
+ansible_runner_command: "ansible-playbook playbook.yml -e do_backup=true"
+ansible_runner_user: _runner
+ansible_runner_home: /home/_runner
+ansible_runner_schedule:
+  - name: my-deployment
+    repo: git@gitserver:user/my-deployment
+    minute: "~"
+    hour: "1~5"
+    weekday: "*"

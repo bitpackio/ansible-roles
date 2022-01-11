@@ -1,0 +1,12 @@
+---
+- name: ansible user
+  user:
+          name: "{{ service_account }}"
+          groups: wheel
+- name: /etc/doas.conf
+  copy:
+          src: doas.conf
+          dest: /etc/doas.conf
+          owner: root
+          group: wheel
+          mode: 0600

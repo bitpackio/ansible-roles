@@ -1,0 +1,3 @@
+pfbadhost_user: _pfbadhost
+pfbadhost_url: https://geoghegan.ca/pub/pf-badhost/0.5/pf-badhost.sh
+pfbadhost_path: /usr/local/bin/pf-badhost

@@ -1,0 +1,17 @@
+---
+- name: "Kubernetes | Copy yaml files"
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item }}"
+  with_items:
+    - operator.yaml
+    - cluster.yaml
+    - dashboard-external-https.yaml
+    - storageclass.yaml
+- name: "Kubernetes | Deploying rook: {{ item }}"
+  shell: "kubectl create -f /tmp/{{ item }} && sleep 10"
+  with_items:
+    - operator.yaml
+    - cluster.yaml
+    - dashboard-external-https.yaml
+    - storageclass.yaml

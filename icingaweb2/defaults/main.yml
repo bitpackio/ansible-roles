@@ -1,0 +1,34 @@
+icingaweb2_vhost: "{{ ansible_fqdn }}"
+icingaweb2_mysql_auth:
+  host: 127.0.0.1
+  user: root
+  password: CHANGEME
+
+icingaweb2_tls_cert: "{{ webserver_tls_certificate | default(false) }}"
+icingaweb2_tls_key: "{{ webserver_tls_key | default(false) }}"
+
+icingaweb2_mysql_db:
+  name: icingaweb2
+  user: icingaweb2
+  password: CHANGEME
+  schema: /usr/share/icingaweb2/etc/schema/mysql.schema.sql
+  schema_openbsd: /var/www/icinga-web2/etc/schema/mysql.schema.sql
+
+icingaweb2_mysql_ido_db:
+  host: 127.0.0.1
+  name: icinga2
+  user: icinga2
+  password: CHANGEME
+
+icingaweb2_modules:
+  - monitoring
+
+icingaweb2_web_user:
+  name: icingaadmin
+  password: CHANGEME
+
+icingaweb2_api_transport:
+  user: icingaweb2
+  password: CHANGEME
+  host: localhost
+  port: 5665

@@ -1,0 +1,6 @@
+---
+theme_modules_dir: "/usr/share/icingaweb2/modules"
+
+theme_modules:
+  - name: company
+    version: v1.0.0

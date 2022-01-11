@@ -1,0 +1,11 @@
+---
+backup_restic_paths:
+    openbsd: /usr/local/bin/restic
+backup_restic_path: "{{ backup_restic_paths[ansible_distribution|lower]|default('restic') }}"
+backup_password_file: /etc/backup_password
+backup_script_path: "/usr/local/bin/backup.sh"
+backup_command: "{{ backup_restic_path }} -r {{ backup_destination }} -p {{ backup_password_file }} backup"
+backup_init_command: "{{ backup_restic_path }} -r {{ backup_destination }} -p {{ backup_password_file }} init"
+backup_cleanup_command: "{{ backup_restic_path }} -r {{ backup_destination }} -p {{ backup_password_file }} forget --keep-daily {{ backup_keep_policy.daily }} --keep-weekly {{ backup_keep_policy.weekly }} --keep-monthly {{ backup_keep_policy.monthly }} --keep-yearly {{ backup_keep_policy.yearly }}"
+backup_job: "{{ backup_script_path }} | mail -s 'Backup report' -r backup {{ backup_mail_to }}"
+backup_cleanup_job: "{{ backup_cleanup_command }} | mail -s 'Backup cleanup report' -r {{ backup_mail_from }} {{ backup_mail_to }}"

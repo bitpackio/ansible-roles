@@ -1,0 +1,20 @@
+---
+bootstrap_sshd_config:
+  ubuntu: /etc/ssh/sshd_config
+  openbsd: /etc/ssh/sshd_config
+  alpine: /etc/ssh/sshd_config
+  archlinux: /etc/ssh/sshd_config
+
+bootstrap_ssh_service_name:
+  ubuntu: sshd
+  openbsd: sshd
+  alpine: sshd
+  archlinux: sshd
+
+bootstrap_aliases_file:
+    openbsd: /etc/mail/aliases
+    ubuntu: /etc/aliases
+
+bootstrap_aliases_reload_command:
+    openbsd: smtpctl update table aliases
+    ubuntu: newaliases

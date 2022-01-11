@@ -1,0 +1,15 @@
+#!/bin/ksh
+
+exposed_udp_in=$(netstat -l -n -finet -pudp |\
+  awk '$4 !~ /^127\.0\.0\.1.*$/ && $1 == "udp" {print $4}')
+
+output=""
+if [ ! -z "$exposed_udp_in" ]; then 
+    output=$output"[ "
+    for i in $exposed_udp_in; do
+        port="${i##*.}"
+        output="$output\"$port\","
+    done
+    output=${output%?}" ]"
+fi
+echo $output

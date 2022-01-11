@@ -1,0 +1,15 @@
+#!/bin/ksh
+
+exposed_tcp_in=$(netstat -l -n -finet -ptcp |\
+  awk '$4 !~ /^127\.0\.0\.1.*$/ && $1 == "tcp" {print $4}')
+
+output=""
+if [ ! -z "$exposed_tcp_in" ]; then 
+    output=$output"[ "
+    for i in $exposed_tcp_in; do
+        port="${i##*.}"
+        output="$output\"$port\","
+    done
+    output=${output%?}" ]"
+fi
+echo $output

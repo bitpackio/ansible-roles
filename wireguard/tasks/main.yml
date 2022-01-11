@@ -1,0 +1,12 @@
+---
+- name: OpenBSD wireguard setup
+  include_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+  vars:
+    ansible_become: yes
+
+- name: systemd based wireguard setup
+  include_tasks: systemd_linux.yml
+  when: ansible_service_mgr|lower == 'systemd'
+  vars:
+    ansible_become: yes

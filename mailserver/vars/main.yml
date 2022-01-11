@@ -1,0 +1,51 @@
+mailserver_aliases_file_path:
+    openbsd: /etc/mail/aliases
+
+mailserver_aliases_reload_command:
+    openbsd: smtpctl update table aliases
+
+mailserver_directories:
+    openbsd:
+        - path: /etc/rspamd/local.d
+          mode: '0755'
+        - path: /etc/mail/dkim
+          mode: '0750'
+          group: _rspamd
+
+mailserver_packages:
+    openbsd:
+        - py3-cryptography
+        - redis
+        - rspamd
+        - opensmtpd-filter-rspamd
+        - opensmtpd-filter-senderscore
+        - dovecot
+
+mailserver_services:
+    openbsd:
+        - redis
+        - rspamd
+        - smtpd
+        - dovecot
+
+mailserver_config_templates:
+    openbsd:
+        - path: /etc/rspamd/local.d/dkim_signing.conf
+          template: dkim_signing.conf.j2
+        - path: /etc/mail/smtpd.conf
+          template: smtpd.conf.j2
+
+mailserver_config_insertions:
+    openbsd:
+        - path: /etc/login.conf
+          line: "dovecot::openfiles-cur=1024::openfiles-max=2048::tc=daemon:"
+          regexp: '^(\s*)dovecot:.*$'
+        - path: /etc/dovecot/conf.d/10-ssl.conf
+          line: "ssl_cert = <{{ mailserver_tls_cert }}"
+          regexp: '^(\s*)ssl_cert(\s*)=.*$'
+        - path: /etc/dovecot/conf.d/10-ssl.conf
+          line: "ssl_key = <{{ mailserver_tls_key }}"
+          regexp: '^(\s*)ssl_key(\s*)=.*$'
+        - path: /etc/dovecot/conf.d/10-mail.conf
+          line: "mail_location = maildir:~/Maildir"
+          regexp: '^(\s*)mail_location(\s*)=.*$'

@@ -1,0 +1,53 @@
+---
+- name: ubuntu install
+  include: "ubuntu.yml"
+  when: ansible_distribution == 'Ubuntu'
+  vars:
+    ansible_become: yes
+- name: openbsd install
+  include: "openbsd.yml"
+  when: ansible_distribution | lower == 'openbsd'
+  vars:
+    ansible_become: yes
+- name: copy templates
+  become: yes
+  copy:
+    src: templates/
+    dest: /etc/icinga2/conf.d/templates/
+  notify: restart_icinga2
+- name: copy services
+  become: yes
+  copy:
+    src: services/
+    dest: /etc/icinga2/conf.d/services/
+  notify: restart_icinga2
+- name: copy commands
+  become: yes
+  copy:
+    src: commands/
+    dest: /etc/icinga2/conf.d/commands/
+  notify: restart_icinga2
+- name: copy notification config
+  become: yes
+  copy:
+    src: notifications.conf
+    dest: /etc/icinga2/conf.d/notifications.conf
+- name: copy downtime config
+  become: yes
+  copy:
+    src: downtimes.conf
+    dest: /etc/icinga2/conf.d/downtimes.conf
+- name: template user config
+  become: yes
+  template:
+    src: users.conf
+    dest: /etc/icinga2/conf.d/users.conf
+  notify: restart_icinga2
+- name: delete default hosts and services
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/icinga2/conf.d/services.conf
+    - /etc/icinga2/conf.d/hosts.conf

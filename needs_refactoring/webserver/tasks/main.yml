@@ -1,0 +1,4 @@
+---
+- name: OpenBSD httpd
+  import_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'

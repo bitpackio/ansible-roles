@@ -1,0 +1,4 @@
+backup_server_user: _backup
+backup_server_home: /data/backup
+backup_server_authorized_keys:
+- "ssh-rsa...."

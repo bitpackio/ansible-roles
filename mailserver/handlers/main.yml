@@ -1,0 +1,4 @@
+---
+- name: mailserver_reload_aliases
+  become: yes
+  command: "{{ mailserver_aliases_reload_command[ ansible_distribution|lower ] }}"

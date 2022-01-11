@@ -1,0 +1,17 @@
+- name: restart_relayd
+  become: yes
+  service:
+    name: relayd
+    state: restarted
+
+- name: restart_httpd
+  become: yes
+  service:
+    name: httpd
+    state: restarted
+
+- name: restart_php_fpm
+  become: yes
+  service:
+    name: php74_fpm
+    state: restarted

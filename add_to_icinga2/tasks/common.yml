@@ -1,0 +1,13 @@
+- name: create ssh user
+  become: yes
+  user:
+    name: "{{ icinga2_monitoring_master.ssh_user }}"
+    state: present
+
+- name: set authorized_keys
+  become: yes
+  authorized_key:
+    user: "{{ icinga2_monitoring_master.ssh_user }}"
+    state: present
+    key: "{{ icinga2_monitoring_master.ssh_pubkey }}"
+

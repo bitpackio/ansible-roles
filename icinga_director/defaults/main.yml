@@ -1,0 +1,8 @@
+---
+director_mysql_auth:
+  host: "127.0.0.1"
+  user: "root"
+  password: "CHANGEME"
+
+director_password: CHANGEME
+

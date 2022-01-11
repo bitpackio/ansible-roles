@@ -1,0 +1,3 @@
+data_sync_packages:
+    openbsd:
+        - rsync-3.2.3

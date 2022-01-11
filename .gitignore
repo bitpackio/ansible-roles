@@ -1,0 +1,4 @@
+*/files/*_private
+*.swp
+*_private
+id_rsa

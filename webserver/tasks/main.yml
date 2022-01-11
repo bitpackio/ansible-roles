@@ -1,0 +1,12 @@
+---
+- name: Common webserver tasks
+  include_tasks: common.yml
+  vars:
+    ansible_become: yes
+
+- name: OpenBSD httpd
+  include_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+  vars:
+    ansible_become: yes
+

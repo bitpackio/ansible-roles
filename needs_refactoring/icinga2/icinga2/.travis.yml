@@ -1,0 +1,24 @@
+---
+sudo: required
+dist: trusty
+language: python
+services:
+  - docker
+before_script:
+  - pip install ansible==$ANSIBLE_VERSION
+  - pip install molecule
+  - pip install docker-py
+script:
+  - molecule test
+matrix:
+  include:
+    - env: ANSIBLE_VERSION="2.5.9"
+    - env: ANSIBLE_VERSION="2.6.5"
+    - env: ANSIBLE_VERSION="2.7.0"
+    - env: ANSIBLE_VERSION="2.7.5"
+branches:
+  only:
+    - master
+    - /^v\d/
+notifications:
+  email: false

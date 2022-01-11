@@ -1,0 +1,60 @@
+---
+- name: add repo keys
+  apt_key:
+    url: "{{ item.key.url }}"
+    state: present
+  loop: "{{ grafana_repos }}"
+
+- name: add repos
+  apt_repository:
+    repo: "{{ item.repo }}"
+    state: present
+  loop: "{{ grafana_repos }}"
+
+- name: install packages
+  package:
+    name: "{{ item }}"
+  loop: "{{ grafana_packages }}"
+
+- name: enable and start systemd services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  loop: "{{ grafana_systemd_services }}"
+
+- name: Download and install grafana icingaweb2 module
+  git:                                                                             
+    repo: "{{ grafana_icingaweb2_module.repo }}"
+    dest: "{{ grafana_icingaweb2_modules_dir }}/{{ grafana_icingaweb2_module.name }}"
+    update: no
+    version: "{{ grafana_icingaweb2_module.version }}"
+  ignore_errors: yes
+
+- name: icinga2 influxdb config template
+  template:
+    src: influxdb.conf
+    dest: /etc/icinga2/features-available/influxdb.conf
+
+- name: enable modules
+  shell: "icingacli module enable {{ grafana_icingaweb2_module.name }}"
+
+- name: create influxdb
+  influxdb_database:
+    hostname: "{{ grafana_influxdb.bindaddr }}"
+    database_name: "{{ grafana_influxdb.database }}"
+    username: "{{ grafana_influxdb.username }}"
+
+- name: enable icinga2 influxdb feature
+  shell: "icinga2 feature enable influxdb"
+
+- name: enable anonymous grafana auth
+  ini_file:
+    path: "{{ grafana_config_file }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop: "{{ grafana_config_values }}"
+
+

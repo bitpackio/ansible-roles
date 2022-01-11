@@ -1,0 +1,11 @@
+- name: create backup user
+  become: yes
+  user:
+    name: "{{ backup_server_user }}"
+    home: "{{ backup_server_home }}"
+- name: edit authorized_keys
+  become: yes
+  authorized_key:
+    user: "{{ backup_server_user }}"
+    state: present
+    key: "{{ backup_server_authorized_keys | join('\n') }}"

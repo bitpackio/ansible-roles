@@ -125,6 +125,13 @@
     line: 'extension=curl'
   notify: restart_php_fpm
 
+- name: activate intl in php.conf
+  lineinfile:
+    path: /etc/php-7.4.ini
+    regexp: '^.*extension.*=.*intl.*$'
+    line: 'extension=intl'
+  notify: restart_php_fpm
+
 - name: set timezone in php.ini
   lineinfile:
     path: /etc/php-7.4.ini

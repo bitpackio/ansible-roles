@@ -1,0 +1,6 @@
+- name: wipe keydisk
+  shell:
+    cmd: keydiskctl wipe
+  delegate_to: localhost
+  tags:
+    - always

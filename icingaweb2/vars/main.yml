@@ -2,7 +2,7 @@ icingaweb2_repo:
   name: icingaweb2-repo
   key:
     url: https://packages.icinga.com/icinga.key
-  repo: "deb https://packages.icinga.com/ubuntu icinga-bionic main"
+  repo: "deb https://packages.icinga.com/ubuntu icinga-focal main"
 
 icingaweb2_packages_openbsd:
   - rsync

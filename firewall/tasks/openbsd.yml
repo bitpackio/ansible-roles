@@ -48,6 +48,8 @@
     state: present
     snapshot: "{{ force_openbsd_snapshot | default(false) }}"
 - name: download pf-badhost
+  environment:
+    SSL_CERT_FILE: "/etc/ssl/cert.pem"
   get_url:
     url: "{{ pfbadhost_url }}"
     dest: "{{ pfbadhost_path }}"

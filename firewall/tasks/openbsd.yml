@@ -48,14 +48,16 @@
     state: present
     snapshot: "{{ force_openbsd_snapshot | default(false) }}"
 - name: download pf-badhost
-  environment:
-    SSL_CERT_FILE: "/etc/ssl/cert.pem"
-  get_url:
+  uri:
     url: "{{ pfbadhost_url }}"
     dest: "{{ pfbadhost_path }}"
     owner: root
     group: wheel
     mode: "0755"
+    ca_path: /etc/ssl/cert.pem
+    status_code:
+      - 200
+      - 304
   register: pfbadhost_installed
 
 - name: enable authlog scanning

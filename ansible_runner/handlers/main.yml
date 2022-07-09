@@ -1,3 +1,0 @@
-- name: update_aliases
-  become: yes
-  command: smtpctl update table aliases

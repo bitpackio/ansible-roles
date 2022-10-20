@@ -1,2 +1,2 @@
-k3s_node_token: '{{ k3s_master_token | default("SOME_SECRET") }}'
+k3s_node_token: 'SOME_SECRET'
 k3s_bootstrap: false

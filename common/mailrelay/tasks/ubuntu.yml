@@ -27,4 +27,6 @@
       regexp: '^(\s*)smtp_sasl_password_maps(\s*)=.*$'
     - line: "smtp_sasl_security_options = noanonymous"
       regexp: '^(\s*)smtp_sasl_security_options(\s*)=.*$'
+    - line: "inet_interfaces = 127.0.0.1"
+      regexp: '^(\s*)inet_interfaces(\s*)=.*$'
   notify: postfix_reload

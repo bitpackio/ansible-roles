@@ -1,0 +1,24 @@
+- name: download cert-manager manifest
+  get_url:
+	url: "https://github.com/jetstack/cert-manager/releases/download/v{{ certmanager_version }}/cert-manager.yaml"
+	dest: "{{ certmanager_manifest_path }}"
+	mode: '0664'
+
+- name: apply cert-manager manifest
+  kubernetes.core.k8s:
+    apply: yes
+	src: "{{ certmanager_manifest_path }}"
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 300
+    wait_condition:
+      type: Complete
+      status: "True"
+
+- name: apply letsencrypt production ClusterIssuer
+  apply: yes
+  definition: "{{ lookup('file', 'letsencrypt-prod.yml') | from_yaml }}"
+
+- name: apply traefik https redirect middleware
+  apply: yes
+  template: 'traefik-https-redirect-middleware.yml' 

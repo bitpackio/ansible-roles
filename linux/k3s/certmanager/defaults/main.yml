@@ -1,0 +1,2 @@
+certmanager_version: 1.10.0
+certmanager_letsencrypt_email: admin@example.org

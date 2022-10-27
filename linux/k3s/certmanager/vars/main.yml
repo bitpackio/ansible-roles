@@ -1,0 +1,2 @@
+certmanager_working_dir: ~/.ansible/k3s/certmanager
+certmanager_manifest_path: "{{ certmanager_working_dir }}/certmanager.yml"

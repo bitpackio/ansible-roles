@@ -1,3 +1,9 @@
+- name: Create directory for manifest storage
+  ansible.builtin.file:
+    path: "{{ certmanager_working_dir }}"
+    state: directory
+    mode: '0755'
+
 - name: download cert-manager manifest
   get_url:
     url: "https://github.com/jetstack/cert-manager/releases/download/v{{ certmanager_version }}/cert-manager.yaml"

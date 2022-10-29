@@ -7,7 +7,7 @@
 - name: apply cert-manager manifest
   kubernetes.core.k8s:
     apply: yes
-	src: "{{ certmanager_manifest_path }}"
+    src: "{{ certmanager_manifest_path }}"
     wait: yes
     wait_sleep: 10
     wait_timeout: 300

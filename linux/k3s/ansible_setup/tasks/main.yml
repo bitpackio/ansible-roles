@@ -1,4 +1,5 @@
 - name: Add helm repo
+  become: yes
   block:
     - name: download helm repo key
       ansible.builtin.get_url:
@@ -12,6 +13,7 @@
       register: sources_update
 
 - name: Update apt-cache
+  become: yes
   ansible.builtin.apt:
     update_cache: yes
   when: sources_update.changed

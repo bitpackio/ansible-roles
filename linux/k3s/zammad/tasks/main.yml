@@ -1,4 +1,4 @@
-- name: Add stable chart repo
+- name: Add zammad chart repo
   kubernetes.core.helm_repository:
     name: stable
     repo_url: "https://kubernetes.github.io/ingress-nginx"

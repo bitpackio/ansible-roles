@@ -4,8 +4,6 @@
     state: latest
   become: yes
 
-- name: add ~/.local/bin to path
-
 - name: install ansible python package
   ansible.builtin.pip:
     name: ansible

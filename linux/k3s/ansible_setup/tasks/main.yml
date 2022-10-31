@@ -1,0 +1,27 @@
+- name: install ansible python package
+  ansible.builtin.pip:
+    name: ansible
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: ~/.kube
+    state: directory
+    mode: '0700'
+    owner: "{{ ansible_user }}"
+
+- name: copy kube config to ansible home dir
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~/.kube/config
+    mode: '0600'
+    owner: "{{ ansible_user }}"
+    remote_src: yes
+  become: yes
+
+- name: install necessary ansible collections
+  community.general.ansible_galaxy_install:
+    type: collection
+    name: "{{ collection_name }}"
+  loop: "{{ k3s_ansible_collections }}"
+  loop_control:
+    loop_var: collection_name

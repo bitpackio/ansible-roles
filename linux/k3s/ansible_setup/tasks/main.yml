@@ -4,6 +4,8 @@
     state: latest
   become: yes
 
+- name: add ~/.local/bin to path
+
 - name: install ansible python package
   ansible.builtin.pip:
     name: ansible
@@ -35,3 +37,5 @@
   loop: "{{ k3s_collections_to_install }}"
   loop_control:
     loop_var: collection_name
+  environment:
+    PATH: "$PATH:{{ ansible_home }}/.local/bin"

@@ -1,3 +1,8 @@
 - name: run cluster init on first node
   shell: "curl -sfL https://get.k3s.io | K3S_TOKEN={{ k3s_master_token }} sh -s - server --cluster-init"
   when: k3s_bootstrap
+
+- name: wait for setup completion
+  wait_for:
+    port: 6443
+    delay: 10

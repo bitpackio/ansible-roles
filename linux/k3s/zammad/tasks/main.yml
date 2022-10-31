@@ -8,6 +8,7 @@
     name: zammad
     chart_ref: zammad/zammad
     release_namespace: zammad
+    create_namespace: yes
     values:
       ingress:
         annotations:

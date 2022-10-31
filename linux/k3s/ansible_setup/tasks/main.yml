@@ -4,9 +4,12 @@
     state: latest
   become: yes
 
-- name: install ansible python package
+- name: install python packages
   ansible.builtin.pip:
-    name: ansible
+    name: "{{ item }}"
+  loop:
+    - ansible
+    - kubernetes
 
 - name: store ansible home as fact
   set_fact:

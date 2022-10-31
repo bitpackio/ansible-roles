@@ -39,3 +39,10 @@
   register: bootstrap_mail_alias
   notify: bootstrap_reload_aliases
   when: "ansible_distribution|lower in bootstrap_aliases_file"
+
+- name: set ansible_user
+  set_fact:
+    ansible_ssh_user: "{{ ansible_user }}"
+
+- name: Reset ssh connection to allow user changes to affect 'current login user'
+  ansible.builtin.meta: reset_connection

@@ -18,9 +18,9 @@
 - name: apply letsencrypt production ClusterIssuer
   kubernetes.core.k8s:
     apply: yes
-    definition: "{{ lookup('file', 'letsencrypt-prod.yml') | from_yaml }}"
+    definition: "{{ lookup('file', 'traefik-https-redirect-middleware.yml') | from_yaml }}"
 
 - name: apply traefik https redirect middleware
   kubernetes.core.k8s:
     apply: yes
-    template: 'traefik-https-redirect-middleware.yml' 
+    template: 'letsencrypt-prod.yml'

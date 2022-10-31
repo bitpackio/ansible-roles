@@ -6,3 +6,4 @@
   wait_for:
     port: 6443
     delay: 10
+  when: k3s_bootstrap

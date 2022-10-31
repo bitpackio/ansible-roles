@@ -1,7 +1,10 @@
-- name: Install or update pip
+- name: Install or update required packages
   package:
-    name: python3-pip
+    name: "{{ item }}"
     state: latest
+  loop:
+    - python3-pip
+    - helm
   become: yes
 
 - name: install python packages

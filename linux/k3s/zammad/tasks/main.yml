@@ -10,4 +10,17 @@
     release_namespace: zammad
     values:
       ingress:
+        annotations:
+          kubernetes.io/ingress.class: traefik
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
         enabled: true 
+        hosts:
+          - host: zammad.skinnyscreens.com
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: zammad-tls
+            hosts:
+               - zammad.skinnyscreens.com

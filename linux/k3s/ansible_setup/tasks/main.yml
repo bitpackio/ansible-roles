@@ -32,6 +32,6 @@
   community.general.ansible_galaxy_install:
     type: collection
     name: "{{ collection_name }}"
-  loop: "{{ k3s_ansible_collections }}"
+  loop: "{{ k3s_collections_to_install }}"
   loop_control:
     loop_var: collection_name

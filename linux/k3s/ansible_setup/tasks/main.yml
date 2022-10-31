@@ -1,3 +1,8 @@
+- name: Install or update pip
+  community.general.easy_install:
+    name: pip
+    state: latest
+
 - name: install ansible python package
   ansible.builtin.pip:
     name: ansible

@@ -1,0 +1,13 @@
+- name: Add stable chart repo
+  kubernetes.core.helm_repository:
+    name: stable
+    repo_url: "https://kubernetes.github.io/ingress-nginx"
+
+- name: Deploy latest version of zammad chart inside zammad namespace with values
+  kubernetes.core.helm:
+    name: zammad
+    chart_ref: zammad/zammad
+    release_namespace: zammad
+    values:
+      ingress:
+        enabled: true 

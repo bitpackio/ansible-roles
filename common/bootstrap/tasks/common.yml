@@ -46,3 +46,6 @@
 
 - name: Reset ssh connection to allow user changes to affect 'current login user'
   ansible.builtin.meta: reset_connection
+
+- name: reload facts
+  setup:

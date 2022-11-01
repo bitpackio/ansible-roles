@@ -15,6 +15,10 @@
     apply: yes
     src: "{{ certmanager_manifest_path }}"
 
+- name: wait a moment
+  pause:
+    seconds: 45
+
 - name: apply letsencrypt production ClusterIssuer
   kubernetes.core.k8s:
     apply: yes

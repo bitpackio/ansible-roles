@@ -2,3 +2,4 @@ k3s_collections_to_install:
   - kubernetes.core
 kube_config: /etc/rancher/k3s/k3s.yaml
 helm_repo_arch: amd64
+ansible_home: /home/ansible

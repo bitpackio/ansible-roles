@@ -37,6 +37,8 @@
 - name: store ansible home as fact
   set_fact:
     ansible_home: "{{ ansible_env['HOME'] }}"
+  become: yes
+  become: "{{ ansible_user }}"
 
 - name: Create kube directory if it does not exist
   ansible.builtin.file:

@@ -14,10 +14,12 @@
   kubernetes.core.k8s:
     apply: yes
     src: "{{ certmanager_manifest_path }}"
+  register: cert_manager
 
-- name: wait a moment
+- name: wait for cert-manager deployment
   pause:
     seconds: 45
+  when: cert_manager.changed
 
 - name: apply letsencrypt production ClusterIssuer
   kubernetes.core.k8s:

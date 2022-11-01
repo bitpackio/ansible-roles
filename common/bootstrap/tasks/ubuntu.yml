@@ -3,6 +3,7 @@
     name: "*"
     state: latest
     update_cache: yes
+  ignore_errors: "{{ bootstrap_ignore_update_errors | default('no') }}"
 
 - name: manage packages
   apt:

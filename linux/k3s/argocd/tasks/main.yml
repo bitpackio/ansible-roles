@@ -20,8 +20,8 @@
             traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
           enabled: true 
           hosts:
-            - argocd.skinnyscreens.com
+            - "{{ argocd_fqdn }}"
           tls:
             - secretName: argocd-tls
               hosts:
-                 - argocd.skinnyscreens.com
+                 - "{{ argocd_fqdn }}"

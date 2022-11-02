@@ -17,11 +17,11 @@
           traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
         enabled: true 
         hosts:
-          - host: zammad.skinnyscreens.com
+          - host: "{{ zammad_fqdn }}"
             paths:
               - path: /
                 pathType: Prefix
         tls:
           - secretName: zammad-tls
             hosts:
-               - zammad.skinnyscreens.com
+               - "{{ zammad-fqdn }}"

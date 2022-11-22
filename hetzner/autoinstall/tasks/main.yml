@@ -14,8 +14,9 @@
       mode: "0755"
   
   - name: copy authorized_keys
-    src: "{{ autoinstall_authorized_keys_src }}"
-    dest: "{{ autoinstall_authorized_keys_dest }}"
+    copy:
+      src: "{{ autoinstall_authorized_keys_src }}"
+      dest: "{{ autoinstall_authorized_keys_dest }}"
   
   - name: run autoinstall
     command: "installimage -a -c {{ setup_conf_dest }} -x {{ post_install_dest }}"

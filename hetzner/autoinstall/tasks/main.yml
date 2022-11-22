@@ -1,0 +1,18 @@
+- name: copy setup.conf template
+  template:
+    src: setup.conf
+    dest: "{{ autoinstall_setup_conf_dest }}"
+
+- name: copy post install script
+  copy:
+    src: post-install.sh
+    dest: "{{ post_install_dest }}"
+    owner: root
+    mode: "0755"
+
+- name: copy authorized_keys
+  src: "{{ autoinstall_authorized_keys_src }}"
+  dest: "{{ autoinstall_authorized_keys_dest }}"
+
+- name: run autoinstall
+  command: "installimage -a -c {{ setup_conf_dest }} -x {{ post_install_dest }}"

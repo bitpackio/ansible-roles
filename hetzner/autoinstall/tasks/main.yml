@@ -19,3 +19,6 @@
   
   - name: run autoinstall
     command: "installimage -a -c {{ setup_conf_dest }} -x {{ post_install_dest }}"
+
+  - name: reboot
+    reboot:

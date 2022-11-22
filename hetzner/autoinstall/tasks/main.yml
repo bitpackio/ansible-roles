@@ -1,5 +1,6 @@
-- block:
+- name: bootstrap fully encrypted linux image
   when: hetzner_autoinstall
+  block:
   - name: copy setup.conf template
     template:
       src: setup.conf

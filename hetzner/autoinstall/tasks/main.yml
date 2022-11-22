@@ -9,7 +9,7 @@
   - name: copy post install script
     copy:
       src: post-install.sh
-      dest: "{{ post_install_dest }}"
+      dest: "{{ autoinstall_post_install_dest }}"
       owner: root
       mode: "0755"
   
@@ -19,7 +19,7 @@
       dest: "{{ autoinstall_authorized_keys_dest }}"
   
   - name: run autoinstall
-    command: "installimage -a -c {{ setup_conf_dest }} -x {{ post_install_dest }}"
+    command: "installimage -a -c {{ autoinstall_setup_conf_dest }} -x {{ autoinstall_post_install_dest }}"
 
   - name: reboot
     reboot:

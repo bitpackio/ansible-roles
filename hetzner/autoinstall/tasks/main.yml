@@ -19,7 +19,7 @@
       dest: "{{ autoinstall_authorized_keys_dest }}"
   
   - name: run autoinstall
-    shell: ". ~/.bashrc && installimage -a -c {{ autoinstall_setup_conf_dest }} -x {{ autoinstall_post_install_dest }}"
+    shell: "/root/.oldroot/nfs/install/installimage -a -c {{ autoinstall_setup_conf_dest }} -x {{ autoinstall_post_install_dest }}"
 
   - name: reboot
     reboot:

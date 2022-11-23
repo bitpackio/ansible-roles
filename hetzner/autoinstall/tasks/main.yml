@@ -7,7 +7,7 @@
       dest: "{{ autoinstall_setup_conf_dest }}"
   
   - name: copy post install script
-    copy:
+    template:
       src: post-install.sh
       dest: "{{ autoinstall_post_install_dest }}"
       owner: root

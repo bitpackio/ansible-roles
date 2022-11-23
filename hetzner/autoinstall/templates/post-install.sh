@@ -41,6 +41,11 @@ add_rfc3442_hook
 mkdir -p /etc/dropbear-initramfs
 cp -a /root/.ssh/authorized_keys /etc/dropbear-initramfs/authorized_keys
 
+# override initramfs interface which is used for dhcp
+{% if autoinstall_initramfs_override_interface %}
+echo "DEVICE={{ autoinstall_initramfs_interface }}" >> /etc/initramfs-tools/initramfs.conf
+{% endif %}
+
 # Update system
 apt-get update >/dev/null
 apt-get -y install cryptsetup-initramfs dropbear-initramfs

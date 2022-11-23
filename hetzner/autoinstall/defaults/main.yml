@@ -2,3 +2,5 @@ autoinstall_image: /root/images/Debian-1105-bullseye-amd64-base.tar.gz
 autoinstall_disk_encryption_secret: secret
 autoinstall_authorized_keys_src: .ssh/id_rsa.pub
 autoinstall_hostname: "{{ inventory_hostname }}"
+autoinstall_initramfs_override_interface: true
+autoinstall_initramfs_interface: ens3

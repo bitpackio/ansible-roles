@@ -23,3 +23,7 @@
 
   - name: reboot
     reboot:
+
+- name: unlock disk
+  raw: "echo {{ autoinstall_disk_encryption secret }} | cryptroot-unlock"
+  when: hetzner_autoinstall|default(false) or disk_unlock|default(false)

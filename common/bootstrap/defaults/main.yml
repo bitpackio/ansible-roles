@@ -3,12 +3,14 @@ bootstrap_domain: "{{ ansible_domain }}"
 
 bootstrap_shell:
   ubuntu: /bin/bash
+  debian: /bin/bash
   openbsd: /bin/ksh
   alpine: /bin/ash
   archlinux: /bin/bash
 
 bootstrap_groups:
   ubuntu: sudo
+  debian: sudo
   openbsd: wheel
   alpine: wheel
   archlinux: wheel
@@ -44,6 +46,19 @@ bootstrap_packages:
       state: present
   archlinux:
     - name: vim
+      state: present
+  debian:
+    - name: tcpdump
+      state: present
+    - name: htop
+      state: present
+    - name: tmux
+      state: present
+    - name: strace
+      state: present
+    - name: postfix
+      state: present
+    - name: mailutils
       state: present
 
 bootstrap_root_mail: root@localhost

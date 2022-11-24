@@ -1,2 +1,2 @@
 - name: unlock_disk
-  raw: "printf '{{ autoinstall_disk_encryption secret }}' | cryptroot-unlock"
+  raw: "printf '{{ autoinstall_disk_encryption_secret }}' | cryptroot-unlock"

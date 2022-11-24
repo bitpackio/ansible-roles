@@ -24,4 +24,4 @@
         tls:
           - secretName: zammad-tls
             hosts:
-               - "{{ zammad-fqdn }}"
+               - "{{ zammad_fqdn }}"

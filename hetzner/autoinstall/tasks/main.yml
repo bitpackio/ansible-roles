@@ -42,4 +42,7 @@
   loop: "{{ ansible_interfaces }}"
   loop_control:
     loop_var: interface
-  when: "ens" in interface and interface != "ens3"
+  when: 
+  - "ens" in interface
+  - interface != "ens3" 
+  - ansible_distribution|lower == "debian"

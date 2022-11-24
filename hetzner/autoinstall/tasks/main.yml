@@ -42,7 +42,14 @@
   loop: "{{ ansible_interfaces }}"
   loop_control:
     loop_var: interface
+  register: debian_interfaces
   when: 
   - '"ens" in interface'
   - interface != "ens3" 
   - ansible_distribution|lower == "debian"
+
+- name: restart networking service
+  service:
+    name: networking
+    state: restarted
+  when: debian_interfaces.changed

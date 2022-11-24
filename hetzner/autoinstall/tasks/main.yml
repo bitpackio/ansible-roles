@@ -25,5 +25,5 @@
     reboot:
 
 - name: unlock disk
-  raw: "printf '{{ autoinstall_disk_encryption secret }}\n' | cryptroot-unlock"
+  raw: "printf '{{ autoinstall_disk_encryption secret }}' | cryptroot-unlock"
   when: hetzner_autoinstall|default(false) or disk_unlock|default(false)

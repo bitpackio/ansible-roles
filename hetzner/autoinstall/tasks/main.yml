@@ -42,3 +42,4 @@
   loop: "{{ ansible_interfaces }}"
   loop_control:
     loop_var: interface
+  when: "ens" in interface and interface != "ens3"

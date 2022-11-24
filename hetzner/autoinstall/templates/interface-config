@@ -1,4 +1,2 @@
-{% if "ens" in interface and interface != "ens3" %}
 auto {{ interface }}
 iface {{ interface }} inet dhcp
-{% endif %}

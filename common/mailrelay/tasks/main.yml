@@ -10,3 +10,9 @@
   when: ansible_distribution|lower == 'ubuntu'
   vars:
     ansible_become: yes
+
+- name: Debian mailrelay setup
+  include_tasks: ubuntu.yml
+  when: ansible_distribution|lower == 'debian'
+  vars:
+    ansible_become: yes

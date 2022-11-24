@@ -25,3 +25,5 @@
   - name: reboot
     reboot:
 
+  - name: flush handlers
+    meta: flush_handlers

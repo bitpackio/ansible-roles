@@ -1,3 +1,4 @@
 k3s_master_token: SOME_SECRET
 k3s_bootstrap: false
 k3s_master_address: "{{ hostvars[groups['linux_k3s_master'][0]]['ipv4_address'] }}"
+k3s_node_address: "{{ ipv4_address }}"

@@ -1,0 +1,22 @@
+- name: refresh apt cache and update packages
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+  ignore_errors: "{{ bootstrap_ignore_update_errors | default('no') }}"
+
+- name: manage packages
+  apt:
+    name: "{{ package.name }}"
+    state: "{{ package.state }}"
+  loop: "{{ bootstrap_packages[ansible_distribution|lower] }}"
+  loop_control:
+    loop_var: package
+
+- name: edit sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'

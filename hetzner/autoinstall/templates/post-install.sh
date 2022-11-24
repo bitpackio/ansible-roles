@@ -1,6 +1,5 @@
 #!/bin/bash
 
-DEBIAN_INTERFACES_CONFIG=/etc/network/interfaces
 add_rfc3442_hook() {
   cat << EOF > /etc/initramfs-tools/hooks/add-rfc3442-dhclient-hook
 #!/bin/sh
@@ -49,11 +48,3 @@ echo "DEVICE={{ autoinstall_initramfs_interface }}" >> /etc/initramfs-tools/init
 # Update system
 apt-get update >/dev/null
 apt-get -y install cryptsetup-initramfs dropbear-initramfs
-
-{% for interface in ansible_interfaces %}
-{% if "ens" in interface and interface != "ens3" and ansible_distribution|lower == "debian" %}
-echo "" >> $DEBIAN_INTERFACES_CONFIG
-echo "auto {{ interface }}" >> $DEBIAN_INTERFACES_CONFIG
-echo "iface {{ interface }} inet dhcp" >> $DEBIAN_INTERFACES_CONFIG
-{% endif %}
-{% endfor %}

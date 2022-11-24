@@ -1,6 +1,7 @@
 - name: bootstrap fully encrypted linux image
   when: hetzner_autoinstall|default(false)
   notify: unlock_disk
+  register: autoinstall
   block:
   - name: copy setup.conf template
     template:
@@ -27,3 +28,18 @@
 
   - name: flush handlers
     meta: flush_handlers
+
+  - name: gather facts
+    setup:
+
+- name: configure additional interfaces (debian)
+  template:
+    dest: "/etc/network/interfaces.d/{{ interface }}.cfg"
+    src: interface-config
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  loop: "{{ ansible_interfaces }}"
+  loop_control:
+    loop_var: interface

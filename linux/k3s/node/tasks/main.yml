@@ -1,3 +1,12 @@
+- name: Install or update required packages
+  package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - apparmor
+    - apparmor-utils
+  become: yes
+
 - name: join node to cluster
   shell: "curl -sfL https://get.k3s.io | K3S_TOKEN={{ k3s_node_token }} sh -s - server --server https://{{ k3s_master_address }}:6443 && sleep 5"
   when: k3s_bootstrap

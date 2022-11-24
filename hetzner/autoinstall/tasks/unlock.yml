@@ -7,3 +7,4 @@
     host: '{{ ansible_ssh_host }}'
     search_regex: OpenSSH|dropbear
     timeout: 300
+  delegate_to: localhost

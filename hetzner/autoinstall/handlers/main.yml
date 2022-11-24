@@ -1,11 +1,2 @@
 - name: unlock_disk
-  block:
-  - name: send unlock command
-    raw: "printf '{{ autoinstall_disk_encryption_secret }}' | cryptroot-unlock"
-  - name: wait for boot
-    wait_for:
-      delay: 5
-      port: '{{ ansible_ssh_port|default(22) }}'
-      host: '{{ ansible_ssh_host }}'
-      search_regex: OpenSSH|dropbear
-      timeout: 300
+  include_tasks: tasks/unlock.yml

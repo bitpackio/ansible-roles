@@ -20,3 +20,6 @@
     enabled: true
     state: started
   become: yes
+
+- name: flush handlers
+  meta: flush_handlers

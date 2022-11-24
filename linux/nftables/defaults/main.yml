@@ -1,0 +1,8 @@
+nftables_whitelisted_interfaces:
+  - lo
+nftables_tcp_in:
+  - 22
+  - 80
+  - 443
+#nftables_udp_in:
+#  - 53

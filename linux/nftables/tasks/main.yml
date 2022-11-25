@@ -1,7 +1,7 @@
 - name: ensure nftables is installed
   package:
     name: nftables
-    state: installed
+    state: present
   become: yes
 
 - name: deploy nftables ruleset

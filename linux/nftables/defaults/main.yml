@@ -1,5 +1,5 @@
-nftables_whitelisted_interfaces:
-  - lo
+nftables_external_interfaces:
+  - ens3
 nftables_tcp_in:
   - 22
   - 80

@@ -55,7 +55,7 @@
           paths:
             - "/"
           tls:
-            - secretName: grafana-tls
+            - secretName: prometheus-tls
               hosts:
                  - "{{ prometheus_fqdn }}"
       prometheusSpec:

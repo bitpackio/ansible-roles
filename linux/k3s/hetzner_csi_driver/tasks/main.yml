@@ -24,7 +24,7 @@
   kubernetes.core.k8s:
     state: patched
     kind: StorageClass
-    name: patch_namespace
+    name: local-path
     definition:
       metadata:
         annotations:

@@ -3,6 +3,11 @@
     apply: yes
     template: hcloud-secret.yml
 
+- name: apply volume encryption secret
+  kubernetes.core.k8s:
+    apply: yes
+    template: encryption-secret.yml
+
 - name: Create directory for manifest storage
   ansible.builtin.file:
     path: "{{ hetzner_csi_working_dir }}"
@@ -19,6 +24,16 @@
   kubernetes.core.k8s:
     apply: yes
     src: "{{ hetzner_csi_manifest_path }}"
+
+- name: patch hetzner storageclass to use encrypted volumes
+  kubernetes.core.k8s:
+    state: patched
+    kind: StorageClass
+    name: hcloud-volumes
+    definition:
+      parameters:
+        csi.storage.k8s.io/node-publish-secret-name: encryption
+        csi.storage.k8s.io/node-publish-secret-namespace: default
 
 - name: mark local storage as non default
   kubernetes.core.k8s:

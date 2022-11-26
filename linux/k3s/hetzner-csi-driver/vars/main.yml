@@ -1,0 +1,2 @@
+hetzner_csi_working_dir: ~/.ansible/k3s/hetzner_csi
+hetzner_csi_manifest_path: "{{ hetzner_csi_working_dir }}/hetzner_csi.yml"

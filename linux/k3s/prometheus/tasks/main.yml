@@ -29,6 +29,7 @@
         externalUrl: "https://{{ k3s_prometheus_alertmanager.fqdn }}/"
         routePrefix: /
       grafana:
+        adminPassword: "{{ k3s_prometheus_grafana.admin_password }}"
         ingress:
           annotations:
             kubernetes.io/ingress.class: traefik

@@ -1,6 +1,7 @@
 k3s_prometheus_grafana:
     ingress_enabled: true
     fqdn: grafana.example.com
+    admin_password: SOME_PASSWORD
 k3s_prometheus:
     ingress_enabled: false
     fqdn: prometheus.example.com

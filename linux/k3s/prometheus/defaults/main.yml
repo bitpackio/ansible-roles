@@ -8,3 +8,4 @@ k3s_prometheus:
 k3s_prometheus_alertmanager:
     ingress_enabled: false
     fqdn: alertmanager.example.com
+k3s_prometheus_chart_version: 42.0.3

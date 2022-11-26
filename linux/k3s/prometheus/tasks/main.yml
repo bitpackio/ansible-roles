@@ -16,17 +16,17 @@
             kubernetes.io/ingress.class: traefik
             cert-manager.io/cluster-issuer: letsencrypt-prod
             traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
-          enabled: true 
+          enabled: "{{ k3s_prometheus_alertmanager.ingress_enabled }}"
           paths:
             - "/"
           hosts:
-            - "{{ alertmanager_fqdn }}"
+            - "{{ k3s_prometheus_alertmanager.fqdn }}"
           tls:
             - secretName: alertmanager-tls
               hosts:
-                 - "{{ alertmanager_fqdn }}"
+                 - "{{ k3s_prometheus_alertmanager.fqdn }}"
       alertmanagerSpec:
-        externalUrl: "https://{{ alertmanager_fqdn }}/"
+        externalUrl: "https://{{ k3s_prometheus_alertmanager.fqdn }}/"
         routePrefix: /
       grafana:
         ingress:
@@ -34,30 +34,30 @@
             kubernetes.io/ingress.class: traefik
             cert-manager.io/cluster-issuer: letsencrypt-prod
             traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
-          enabled: true 
+          enabled: "{{ k3s_prometheus_grafana.ingress_enabled }}"
           hosts:
-            - "{{ grafana_fqdn }}"
+            - "{{ k3s_prometheus_grafana.fqdn }}"
           paths:
             - "/"
           tls:
             - secretName: grafana-tls
               hosts:
-                 - "{{ grafana_fqdn }}"
+                 - "{{ k3s_prometheus_grafana.fqdn }}"
       prometheus:
         ingress:
           annotations:
             kubernetes.io/ingress.class: traefik
             cert-manager.io/cluster-issuer: letsencrypt-prod
             traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
-          enabled: true 
+          enabled: "{{ k3s_prometheus.ingress_enabled }}"
           hosts:
-            - "{{ prometheus_fqdn }}"
+            - "{{ k3s_prometheus.fqdn }}"
           paths:
             - "/"
           tls:
             - secretName: prometheus-tls
               hosts:
-                 - "{{ prometheus_fqdn }}"
+                 - "{{ k3s_prometheus.fqdn }}"
       prometheusSpec:
-        externalUrl: "https://{{ prometheus_fqdn }}/"
+        externalUrl: "https://{{ k3s_prometheus.fqdn }}/"
         routePrefix: /

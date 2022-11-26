@@ -1,3 +1,9 @@
-prometheus_fqdn: prometheus.example.com
-grafana_fqdn: grafana.example.com
-alertmanager_fqdn: alertmanager.example.com
+k3s_prometheus_grafana:
+    ingress_enabled: true
+    fqdn: grafana.example.com
+k3s_prometheus:
+    ingress_enabled: false
+    fqdn: prometheus.example.com
+k3s_prometheus_alertmanager:
+    ingress_enabled: false
+    fqdn: alertmanager.example.com

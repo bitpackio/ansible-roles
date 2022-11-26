@@ -1,0 +1,63 @@
+- name: Add prometheus-community chart repo
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: "https://prometheus-community.github.io/helm-charts"
+
+- name: Deploy latest version of kube-prometheus-stack chart inside monitoring namespace with values
+  kubernetes.core.helm:
+    name: prometheus-stack
+    chart_ref: prometheus-community/kube-prometheus-stack
+    release_namespace: monitoring
+    create_namespace: yes
+    values:
+      alertmanager:
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: true 
+          paths:
+            - "/"
+          hosts:
+            - "{{ alertmanager_fqdn }}"
+          tls:
+            - secretName: alertmanager-tls
+              hosts:
+                 - "{{ alertmanager_fqdn }}"
+      alertmanagerSpec:
+        externalUrl: "https://{{ alert_manager_fqdn }}/"
+        routePrefix: /
+      grafana:
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: true 
+          hosts:
+            - "{{ grafana_fqdn }}"
+          paths:
+            - "/"
+          tls:
+            - secretName: grafana-tls
+              hosts:
+                 - "{{ grafana_fqdn }}"
+      prometheus:
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: true 
+          hosts:
+            - "{{ prometheus_fqdn }}"
+          paths:
+            - "/"
+          tls:
+            - secretName: grafana-tls
+              hosts:
+                 - "{{ prometheus_fqdn }}"
+      prometheusSpec:
+        externalUrl: "https://{{ prometheus_manager_fqdn }}/"
+        routePrefix: /

@@ -1,0 +1,3 @@
+prometheus_fqdn: prometheus.example.com
+grafana_fqdn: grafana.example.com
+alertmanager_fqdn: alertmanager.example.com

@@ -1,0 +1,2 @@
+longhorn_working_dir: ~/.ansible/k3s/longhorn
+longhorn_manifest_path: "{{ longhorn_working_dir }}/longhorn.yml"

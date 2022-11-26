@@ -19,3 +19,13 @@
   kubernetes.core.k8s:
     apply: yes
     src: "{{ hetzner_csi_manifest_path }}"
+
+- name: mark local storage as non default
+  kubernetes.core.k8s:
+    state: patched
+    kind: StorageClass
+    name: patch_namespace
+    definition:
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "false"

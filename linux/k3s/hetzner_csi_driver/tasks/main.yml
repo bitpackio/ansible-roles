@@ -28,7 +28,7 @@
 - name: apply manifest for encrypted storageclass
   kubernetes.core.k8s:
     apply: yes
-    src: hcloud-volumes-encrypted.yml
+    template: 'hcloud-volumes-encrypted.yml'
 
 - name: mark local storage and unencrypted hetzner volumes as non default
   kubernetes.core.k8s:

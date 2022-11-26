@@ -25,22 +25,22 @@
     apply: yes
     src: "{{ hetzner_csi_manifest_path }}"
 
-- name: patch hetzner storageclass to use encrypted volumes
+- name: apply manifest for encrypted storageclass
   kubernetes.core.k8s:
-    state: patched
-    kind: StorageClass
-    name: hcloud-volumes
-    definition:
-      parameters:
-        csi.storage.k8s.io/node-publish-secret-name: encryption
-        csi.storage.k8s.io/node-publish-secret-namespace: default
+    apply: yes
+    src: hcloud-volumes-encrypted.yml
 
-- name: mark local storage as non default
+- name: mark local storage and unencrypted hetzner volumes as non default
   kubernetes.core.k8s:
     state: patched
     kind: StorageClass
-    name: local-path
+    name: "{{ storage_class_name }}"
     definition:
       metadata:
         annotations:
           storageclass.kubernetes.io/is-default-class: "false"
+  loop:
+  - local-path
+  - hcloud-volumes
+  loop_control:
+    loop_var: storage_class_name

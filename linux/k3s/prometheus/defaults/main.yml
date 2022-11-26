@@ -8,5 +8,3 @@ k3s_prometheus:
 k3s_prometheus_alertmanager:
     ingress_enabled: false
     fqdn: alertmanager.example.com
-    test_value: test
-    another_test_value: test

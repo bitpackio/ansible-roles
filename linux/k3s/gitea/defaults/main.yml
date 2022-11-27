@@ -1,0 +1,4 @@
+gitea_fqdn: gitea.example.com
+gitea_admin_user: gitea-admin
+gitea_admin_password: some_password
+gitea_admin_email: admin@example.com

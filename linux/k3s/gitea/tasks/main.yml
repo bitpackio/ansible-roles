@@ -1,0 +1,34 @@
+- name: Add gitea chart repo
+  kubernetes.core.helm_repository:
+    name: gitea
+    repo_url: "https://dl.gitea.io/charts/"
+
+- name: Deploy latest version of gitea chart inside gitea namespace with values
+  kubernetes.core.helm:
+    name: gitea
+    chart_ref: gitea/gitea
+    release_namespace: gitea
+    create_namespace: yes
+    values:
+      gitea:
+        admin:
+          username: "{{ gitea_admin_user }}"
+          password: "{{ gitea_admin_password }}"
+          email: "{{ gitea_admin_email }}"
+      persistence:
+        enabled: true
+      ingress:
+        annotations:
+          kubernetes.io/ingress.class: traefik
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+        enabled: true 
+        hosts:
+          - host: "{{ gitea_fqdn }}"
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: gitea-tls
+            hosts:
+               - "{{ gitea_fqdn }}"

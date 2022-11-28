@@ -41,14 +41,20 @@
     mode: '0700'
     owner: "{{ ansible_user }}"
 
+- name: check if k3s kube config exists
+  stat:
+    path: "{{ k3s_kube_config_path }}"
+  register: kube_config_stat
+
 - name: copy kube config to ansible home dir
   copy:
-    src: /etc/rancher/k3s/k3s.yaml
+    src: "{{ k3s_kube_config_path }}"
     dest: "{{ ansible_home }}/.kube/config"
     mode: '0600'
     owner: "{{ ansible_user }}"
     remote_src: yes
   become: yes
+  when: kube_config_stat.stat.exists
 
 - name: install necessary ansible collections
   community.general.ansible_galaxy_install:

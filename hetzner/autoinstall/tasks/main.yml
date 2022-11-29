@@ -39,7 +39,7 @@
     group: root
     mode: "0644"
   become: yes
-  loop: "{{ ansible_interfaces }}"
+  loop: "{{ autoinstall_interfaces }}"
   loop_control:
     loop_var: interface
   register: debian_interfaces

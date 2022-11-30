@@ -23,5 +23,5 @@
 
 - name: set ansible_user
   set_fact:
-      ansible_ssh_user: "{{ bootstrap_user|default('root') }}"
-  when: connection_test is succeeded
+      ansible_ssh_user: "{{ ansible_user }}"
+  when: connection_test.rc == 0

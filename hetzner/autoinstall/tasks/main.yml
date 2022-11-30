@@ -49,6 +49,7 @@
   - ansible_distribution|lower == "debian"
 
 - name: restart networking service
+  become: yes
   service:
     name: networking
     state: restarted

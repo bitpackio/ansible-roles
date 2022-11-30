@@ -26,8 +26,5 @@
       ansible_ssh_user: "{{ ansible_user }}"
   when: connection_test is succeeded
 
-- name: Reset ssh connection to allow user changes to affect 'current login user'
-  ansible.builtin.meta: reset_connection
-
 - name: reload facts
   setup:

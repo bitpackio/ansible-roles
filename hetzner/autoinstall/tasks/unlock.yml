@@ -31,7 +31,7 @@
 
 - name: set python interpreter
   set_fact:
-      ansible_ssh_user: /usr/bin/env python
+      ansible_python_interpreter: /usr/bin/env python
 
 - name: Clear gathered facts from all currently targeted hosts
   ansible.builtin.meta: clear_facts

@@ -23,7 +23,6 @@
 
 - name: Clear gathered facts from all currently targeted hosts
   ansible.builtin.meta: clear_facts
-  delegate_to: localhost
 
 - name: set ansible_user
   set_fact:

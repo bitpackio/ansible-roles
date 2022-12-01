@@ -21,8 +21,6 @@
   register: connection_test
   ignore_errors: yes
   delegate_to: localhost
-  delegate_facts: yes
-
 
 - name: set ansible_user
   set_fact:

@@ -9,6 +9,7 @@
     search_regex: OpenSSH|dropbear
     timeout: 300
   delegate_to: localhost
+  delegate_facts: yes
 
 - name: test ssh connection with {{ ansible_user }}
   shell: |
@@ -20,6 +21,7 @@
   register: connection_test
   ignore_errors: yes
   delegate_to: localhost
+  delegate_facts: yes
 
 - name: Clear gathered facts from all currently targeted hosts
   ansible.builtin.meta: clear_facts

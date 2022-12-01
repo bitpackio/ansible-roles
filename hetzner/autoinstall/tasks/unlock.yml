@@ -30,7 +30,7 @@
 - name: set python interpreter
   set_fact:
       ansible_python_interpreter: /usr/bin/env python3
-      ansible_python_interpreter:
+      discovered_interpreter_python:
 
 - name: reload facts
   setup:

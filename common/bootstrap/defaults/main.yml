@@ -1,5 +1,5 @@
 bootstrap_hostname: "{{ inventory_hostname }}"
-bootstrap_domain: "{{ ansible_domain | default('ansible.local') }}"
+bootstrap_domain: ansible.local
 
 bootstrap_shell:
   ubuntu: /bin/bash

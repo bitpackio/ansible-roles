@@ -17,10 +17,3 @@
     owner: root
     group: wheel
     mode: 0600
-
-# currently broken; does not find hostnamectl binary
-- name: set hostname (via systemd)
-  hostname:
-    name: "{{ bootstrap_hostname }}.{{ bootstrap_domain }}"
-    use: systemd
-  ignore_errors: yes

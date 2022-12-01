@@ -49,3 +49,7 @@
 
 - name: reload facts
   setup:
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ bootstrap_hostname }}.{{ bootstrap_domain }}"

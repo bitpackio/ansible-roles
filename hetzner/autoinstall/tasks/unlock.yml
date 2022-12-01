@@ -31,6 +31,9 @@
   set_fact:
       ansible_python_interpreter: /usr/bin/env python3
 
+- name: clear facts
+  meta: clear_facts
+
 - name: reload facts
   setup:
 

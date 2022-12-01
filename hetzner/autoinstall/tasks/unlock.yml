@@ -35,3 +35,7 @@
 
 - name: reload facts
   setup:
+
+- name: set python interpreter
+  set_fact:
+      ansible_python_interpreter: "{{ discovered_interpreter_python }}"

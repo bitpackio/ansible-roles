@@ -1,5 +1,5 @@
 - name: bootstrap fully encrypted linux image
-  when: hetzner_autoinstall|default(false)
+  when: hetzner_autoinstall
   notify: unlock_disk
   block:
   - name: copy setup.conf template

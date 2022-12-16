@@ -13,7 +13,7 @@
       gitea:
         config:
           service:
-            disableRegistration: "{{ gitea_disable_registration }}"
+            DISABLE_REGISTRATION: "{{ gitea_disable_registration }}"
         admin:
           username: "{{ gitea_admin_user }}"
           password: "{{ gitea_admin_password }}"

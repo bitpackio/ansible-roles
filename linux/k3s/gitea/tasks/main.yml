@@ -12,7 +12,8 @@
     values:
       gitea:
         config:
-          disableRegistration: "{{ gitea_disable_registration }}"
+          service:
+            disableRegistration: "{{ gitea_disable_registration }}"
         admin:
           username: "{{ gitea_admin_user }}"
           password: "{{ gitea_admin_password }}"

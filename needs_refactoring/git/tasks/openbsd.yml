@@ -1,0 +1,12 @@
+---
+- name: add gogs user
+  user:
+    name: _gogs
+- name: install {{ item }}
+  community.general.openbsd_pkg:
+    name: {{ item }}
+    state: present
+    snapshot: "{{ force_openbsd_snapshot | default(false) }}"
+  with_items:
+    - git
+    - go

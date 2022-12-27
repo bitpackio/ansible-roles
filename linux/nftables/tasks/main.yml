@@ -1,0 +1,25 @@
+- name: ensure nftables is installed
+  package:
+    name: nftables
+    state: present
+  become: yes
+
+- name: deploy nftables ruleset
+  template:
+    src: nftables.conf
+    dest: "{{ nftables_ruleset_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: reload_nftables
+  become: yes
+
+- name: ensure nftables is enabled and started
+  service:
+    name: nftables
+    enabled: true
+    state: started
+  become: yes
+
+- name: flush handlers
+  meta: flush_handlers

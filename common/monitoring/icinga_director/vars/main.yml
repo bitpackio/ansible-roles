@@ -1,0 +1,64 @@
+director_user:
+  name: icingadirector
+  group: icingaweb2
+  home: /var/lib/icingadirector
+  shell: /bin/false
+
+director_modules_dir: "/usr/share/icingaweb2/modules"
+director_modules_dir_openbsd: "/var/www/icinga-web2/modules"
+
+director_modules:
+  - name: reactbundle
+    version: v0.9.0
+  - name: ipl
+    version: v0.5.0
+  - name: incubator
+    version: v0.6.0
+  - name: director
+    version: v1.8.0
+
+director_packages:
+  - git
+  - python3-mysqldb
+  - php-curl
+  - php-posix
+  - php-sockets
+
+director_packages_openbsd:
+  - git
+
+director_mysql_dbs:
+  - name: director
+    user: director 
+    password: "{{ director_password }}"
+    schema: "{{ director_modules_dir }}/director/schema/mysql.sql"
+    schema_openbsd: "{{ director_modules_dir_openbsd }}/director/schema/mysql.sql"
+
+director_icingaweb_resources:
+  - name: director
+    option: type
+    value: db
+  - name: director
+    option: db
+    value: mysql
+  - name: director
+    option: host
+    value: "127.0.0.1"
+  - name: director
+    option: port
+    value: ""
+  - name: director
+    option: dbname
+    value: director
+  - name: director
+    option: username
+    value: director
+  - name: director
+    option: password
+    value: "{{ director_password }}"
+  - name: director
+    option: charset
+    value: utf8
+  - name: director
+    option: use_ssl
+    value: "0"

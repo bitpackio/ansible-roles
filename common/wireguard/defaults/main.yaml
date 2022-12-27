@@ -1,0 +1,12 @@
+---
+wg_if: "wg0"
+wg_desc: "Wireguard VPN (ansible managed)"
+wg_port: 43168
+wg_net : "10.253.254.1/24"
+wg_peers:
+    - pubkey: "XXXX"
+      allowed_nets:
+          - "10.253.254.12/32"
+    - pubkey: "XXXX"
+      allowed_nets:
+          - "10.253.254.13/32"

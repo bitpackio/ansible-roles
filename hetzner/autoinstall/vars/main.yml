@@ -1,0 +1,3 @@
+autoinstall_authorized_keys_dest: /tmp/authorized_keys
+autoinstall_setup_conf_dest: /tmp/setup.conf
+autoinstall_post_install_dest: /tmp/post-install.sh

@@ -1,0 +1,6 @@
+- name: restore keydisk
+  shell:
+    cmd: keydiskctl restore
+  delegate_to: localhost
+  tags:
+    - always

@@ -1,0 +1,82 @@
+---
+- name: install prequisities
+  package:
+    name: "{{ item }}"
+  loop: "{{ icinga2_packages_pre }}"
+
+- name: reload facts
+  setup:
+
+- name: add icinga2 repo key
+  apt_key:
+    url: "{{ icinga2_repo.key.url }}"
+    state: present
+  ignore_errors: yes
+
+- name: add icinga2 repo
+  apt_repository:
+    repo: "{{ icinga2_repo.repo }}"
+    state: present
+
+- name: install packages
+  package:
+    name: "{{ item }}"
+  loop: "{{ icinga2_packages }}"
+
+- name: enable and start systemd service
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ icinga2_systemd_services }}"
+
+- name: create mysql db
+  mysql_db:
+    login_host: "{{ icinga2_mysql_auth.host }}"
+    login_user: "{{ icinga2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icinga2_mysql_db.name }}"
+    state: present
+    target: "{{ icinga2_mysql_db.schema }}"
+  register: db_created
+
+- name: import mysql schema
+  mysql_db:
+    login_host: "{{ icinga2_mysql_auth.host }}"
+    login_user: "{{ icinga2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icinga2_mysql_db.name }}"
+    state: import
+    target: "{{ icinga2_mysql_db.schema }}"
+  when: db_created.changed
+
+- name: create mysql users
+  mysql_user:
+    login_host: "{{ icinga2_mysql_auth.host }}"
+    login_user: "{{ icinga2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icinga2_mysql_db.user }}"
+    password: "{{ icinga2_mysql_db.password }}"
+    priv: "{{ icinga2_mysql_db.name }}.*:ALL"
+    state: present
+
+- name: deploy icinga2 ido-mysql config
+  template:
+    src: ido-mysql.conf
+    dest: /etc/icinga2/features-available/ido-mysql.conf
+
+- name: enable icinga2 features
+  command: "icinga2 feature enable {{ item }}"
+  loop: "{{ icinga2_features }}"
+  notify: restart_icinga2
+
+- name: setup icinga2 api
+  command: "icinga2 api setup"
+  when: '"api" in icinga2_features'
+
+- name: configure icinga2 api users
+  template:
+    src: api-users.conf
+    dest: /etc/icinga2/conf.d/api-users.conf
+  when: '"api" in icinga2_features'
+  notify: restart_icinga2

@@ -1,0 +1,5 @@
+---
+- name: reload httpd
+  command: rcctl reload httpd
+- name: restart httpd
+  command: rcctl restart httpd

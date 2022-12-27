@@ -1,0 +1,6 @@
+---
+- name: run common tasks
+  include_tasks: common.yml
+  vars:
+    ansible_become: yes
+

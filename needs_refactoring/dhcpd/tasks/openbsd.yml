@@ -1,0 +1,30 @@
+---
+- name: dhcpd.conf
+  template:
+    src: dhcpd.conf
+    dest: /etc/dhcpd.conf
+    owner: root
+    group: wheel
+    mode: 0644
+  notify: restart dhcpd
+- name: ensure dhcpd is enabled and started
+  service:
+    name: dhcpd
+    state: started
+- name: define dhcpd_flags variable
+  set_fact:
+    dhcpd_flags: "{{ dhcpd_nets | map(attribute='interface') | join(' ')}}"
+- name: dhcpd flags
+  lineinfile:
+    dest: /etc/rc.conf.local
+    regexp: "^dhcpd_flags="
+    line: "dhcpd_flags=\"{{ dhcpd_flags }}\""
+    create: yes
+  notify: restart dhcpd
+- name: pf rules
+  lineinfile:
+    path: /etc/anchors/ansible
+    line: "pass in on {{ item.interface }} inet proto udp to port { 67 68 }" 
+  with_items:
+    - "{{ dhcpd_nets }}"
+  notify: reload pf

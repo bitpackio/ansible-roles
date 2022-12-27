@@ -1,0 +1,16 @@
+- name: Create directory for manifest storage
+  ansible.builtin.file:
+    path: "{{ longhorn_working_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: download longhorn manifest
+  get_url:
+    url: "https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml"
+    dest: "{{ longhorn_manifest_path }}"
+    mode: '0664'
+
+- name: apply longhorn manifest
+  kubernetes.core.k8s:
+    apply: yes
+    src: "{{ longhorn_manifest_path }}"

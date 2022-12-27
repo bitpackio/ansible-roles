@@ -1,0 +1,19 @@
+- name: Upgrade / replace / downgrade / uninstall all installed packages to the latest versions available
+  community.general.pacman:
+    upgrade: yes
+    update_cache: yes
+
+- name: install doas 
+  community.general.pacman:
+    name: opendoas
+    state: latest
+
+- name: edit doas.conf
+  lineinfile:
+    line: 'permit nopass keepenv :wheel'
+    regexp: '^.*permit nopass keepenv :wheel.*$'
+    path: /etc/doas.conf
+    create: yes
+    owner: root
+    group: wheel
+    mode: 0600

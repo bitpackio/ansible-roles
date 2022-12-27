@@ -1,0 +1,26 @@
+- name: add host to icinga
+  uri:
+    url: "{{ icinga2_api_url }}/v1/objects/hosts/{{ ansible_fqdn }}"
+    method: PUT
+    return_content: yes
+    headers:
+        Accept: application/json
+    body_format: json
+    body: '{ "templates": [ "linux" ], "attrs": { "address": "{{ ansible_fqdn }}" }, "pretty": true }'
+    validate_certs: no
+    url_username: "{{ icinga2_monitoring_master.api_user }}"
+    url_password: "{{ icinga2_monitoring_master.api_password }}"
+  failed_when: false
+
+- name: update host information in icinga
+  uri:
+    url: "{{ icinga2_api_url }}/v1/objects/hosts/{{ ansible_fqdn }}"
+    method: POST
+    return_content: yes
+    headers:
+        Accept: application/json
+    body_format: json
+    body: '{ "templates": [ "linux" ], "attrs": { "address": "{{ ansible_fqdn }}" }, "pretty": true }'
+    validate_certs: no
+    url_username: "{{ icinga2_monitoring_master.api_user }}"
+    url_password: "{{ icinga2_monitoring_master.api_password }}"

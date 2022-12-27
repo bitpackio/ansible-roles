@@ -1,0 +1,25 @@
+webserver_htpasswd_file:
+    openbsd: 
+        path: /var/www/htpasswd
+        chroot_path: /htpasswd
+        owner: www
+        group: www
+        mode: "0400"
+        crypt_scheme: "bcrypt"
+
+webserver_packages:
+    openbsd:
+        - py3-passlib
+
+webserver_directories:
+    openbsd:
+        - path: /var/www/htdocs/pub
+          owner: www
+        - path: /var/www/htdocs/restricted
+          owner: www
+
+webserver_config_insertions:
+    openbsd:
+        - path: /etc/httpd.conf
+          line: 'include "/etc/httpd.conf.default"'
+          regexp: '^.*include.*"/etc/httpd.conf.default".*$'

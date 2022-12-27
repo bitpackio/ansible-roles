@@ -1,0 +1,32 @@
+{% if gitea_tls_cert|default(false) %}
+server "{{ gitea_fqdn }}" {
+    listen on * port 80
+        location "/.well-known/acme-challenge/*" {
+                root "/acme"
+                request strip 2
+        }
+                location * {
+                block return 302 "https://$HTTP_HOST$REQUEST_URI"
+        }
+    }
+
+server "{{ gitea_fqdn }}" {
+        listen on * tls port 443
+        tls {
+                certificate "{{ gitea_tls_cert }}"
+                key "{{ gitea_tls_key }}"
+        }
+        connection { max requests 500, timeout 3600 }
+        location "*" {
+            fastcgi socket "/run/gitea.sock"
+        }
+}
+{% else %}
+server "{{ gitea_fqdn }}" {
+        listen on * port 80
+        connection { max requests 500, timeout 3600 }
+        location "*" {
+            fastcgi socket "/run/gitea.sock"
+        }
+}
+{% endif %}

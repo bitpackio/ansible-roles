@@ -1,0 +1,21 @@
+- name: Add helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ helm_repo.name }}"
+    repo_url: "{{ helm_repo.url }}"
+  loop:
+    "{{ helm_handler_repos }}"
+  loop_control:
+    loop_var: helm_repo
+
+- name: Deploy helm chart
+  kubernetes.core.helm:
+    name: "{{ helm_chart.name }}"
+    chart_ref: "{{ helm_chart.ref }}"
+    chart_version: "{{ helm_chart.version }}"
+    release_namespace: "{{ helm_chart.namespace }}"
+    create_namespace: yes
+    values: "{{ helm_chart.values | from_yaml }}"
+  loop:
+    "{{ helm_handler_charts }}"
+  loop_control:
+    loop_var: helm_chart

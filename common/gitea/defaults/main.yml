@@ -1,0 +1,8 @@
+gitea_fqdn: "{{ ansible_fqdn }}"
+gitea_httpd: True
+gitea_admins:
+    - name: gitea_admin
+      email: root@localhost
+      password: CHANGEME
+gitea_tls_cert: "{{ webserver_tls_cert|default(false) }}"
+gitea_tls_key: "{{ webserver_tls_key|default(false) }}"

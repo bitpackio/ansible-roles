@@ -1,0 +1,30 @@
+---
+- name: install packages
+  package:
+    name: "{{ item }}"
+  loop: "{{ mysql_packages }}"
+
+- name: reload facts
+  setup:
+
+- name: enable and start systemd service
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ mysql_systemd_services }}"
+
+- name: change mysql root password
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+  loop:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost

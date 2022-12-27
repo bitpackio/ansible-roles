@@ -1,0 +1,19 @@
+mailserver_fqdn: "{{ ansible_fqdn }}"
+mailserver_domain: "{{ ansible_domain }}"
+mailserver_tls_cert: "/etc/ssl/{{ mailserver_fqdn }}.crt"
+mailserver_tls_key: "/etc/ssl/private/{{ mailserver_fqdn }}.key"
+mailserver_senderscore_block: "10"
+mailserver_senderscore_junk: "70"
+mailserver_dkim:
+    key: "/etc/mail/dkim/{{ mailserver_domain }}.key"
+    pub: "/etc/mail/dkim/{{ mailserver_domain }}.pub"
+    selector: 20200828
+    size: 1024
+mailserver_users:
+    - name: some_user
+      password: some_password
+      state: present
+      shell: /usr/bin/false
+mailserver_aliases:
+    - key: root
+      value: some_user

@@ -1,0 +1,15 @@
+- name: smtpd_reload
+  become: yes
+  service:
+    name: smtpd
+    state: restarted
+
+- name: postmap
+  become: yes
+  shell: postmap /etc/postfix/secrets
+
+- name: postfix_reload
+  become: yes
+  service:
+    name: postfix
+    state: restarted

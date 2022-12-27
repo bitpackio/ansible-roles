@@ -1,0 +1,80 @@
+grafana_icingaweb2_modules_dir: /usr/share/icingaweb2/modules
+grafana_icingaweb2_modules_dir_openbsd: /var/www/icinga-web2/modules/
+grafana_icingaweb2_module:
+  repo: https://github.com/Mikesch-mp/icingaweb2-module-grafana
+  version: v1.4.2
+  name: grafana
+
+grafana_packages:
+  - python3-apt
+  - python3-influxdb
+  - python3-requests
+  - grafana
+  - influxdb
+
+grafana_packages_openbsd:
+  - git
+  - influxdb
+  - py3-influxdb
+  - py3-requests
+  - grafana
+
+grafana_repos:
+  - name: grafana-repo
+    key:
+      url: https://packages.grafana.com/gpg.key
+    state: present
+    repo: "deb https://packages.grafana.com/oss/deb stable main"
+  - name: influxdb-repo
+    key:
+      url: https://repos.influxdata.com/influxdb.key
+    repo: "deb https://repos.influxdata.com/ubuntu focal stable"
+    state: present
+
+grafana_systemd_services:
+  - influxdb
+  - grafana-server
+
+grafana_openbsd_services:
+  - influxdb
+  - grafana
+
+grafana_influxdb:
+  bindaddr: 127.0.0.1
+  bindport: 8086
+  database: icinga2
+  username: icinga2
+
+grafana_config_file: /etc/grafana/grafana.ini
+grafana_config_file_openbsd: /etc/grafana/config.ini
+grafana_config_values: 
+  - section: server
+    option: http_addr
+    value: 127.0.0.1
+  - section: server
+    option: http_port
+    value: 3000
+  - section: server
+    option: root_url
+    value: "%(protocol)s://%(domain)s:%(http_port)s/grafana-dashboards/"
+  - section: server
+    option: serve_from_sub_path
+    value: true
+  - section: database
+    option: type
+    value: sqlite3
+  - section: database
+    option: host
+    value: 127.0.0.1
+  - section: database
+    option: name
+    value: grafana
+  - section: database
+    option: user
+    value: grafana
+  - section: database
+    option: password
+    value: "{{ lookup('password', '/dev/null length=32') }}"
+  - section: auth.anonymous
+    option: enabled
+    value: true

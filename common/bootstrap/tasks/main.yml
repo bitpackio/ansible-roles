@@ -1,0 +1,12 @@
+- name: gather facts
+  setup:
+
+- name: run distribution specific include taks
+  include_tasks: "{{ ansible_distribution|lower}}.yml"
+  vars:
+    ansible_become: "{{ 'no' if ansible_ssh_user | default('None') == 'root' else 'yes' }}"
+
+- name: run common bootstrap tasks
+  include_tasks: common.yml
+  vars:
+    ansible_become: "{{ 'no' if ansible_ssh_user | default('None') == 'root' else 'yes' }}"

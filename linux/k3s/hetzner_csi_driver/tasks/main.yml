@@ -1,0 +1,46 @@
+- name: apply hetzner cloud secret
+  kubernetes.core.k8s:
+    apply: yes
+    template: hcloud-secret.yml
+
+- name: apply volume encryption secret
+  kubernetes.core.k8s:
+    apply: yes
+    template: encryption-secret.yml
+
+- name: Create directory for manifest storage
+  ansible.builtin.file:
+    path: "{{ hetzner_csi_working_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: download hetzner_csi manifest
+  get_url:
+    url: "https://raw.githubusercontent.com/hetznercloud/csi-driver/v{{ hetzner_csi_version }}/deploy/kubernetes/hcloud-csi.yml"
+    dest: "{{ hetzner_csi_manifest_path }}"
+    mode: '0664'
+
+- name: apply hetzner_csi manifest
+  kubernetes.core.k8s:
+    apply: yes
+    src: "{{ hetzner_csi_manifest_path }}"
+
+- name: apply manifest for encrypted storageclass
+  kubernetes.core.k8s:
+    apply: yes
+    template: 'hcloud-volumes-encrypted.yml'
+
+- name: mark local storage and unencrypted hetzner volumes as non default
+  kubernetes.core.k8s:
+    state: patched
+    kind: StorageClass
+    name: "{{ storage_class_name }}"
+    definition:
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "false"
+  loop:
+  - local-path
+  - hcloud-volumes
+  loop_control:
+    loop_var: storage_class_name

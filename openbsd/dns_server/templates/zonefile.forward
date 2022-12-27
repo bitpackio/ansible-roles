@@ -1,0 +1,21 @@
+$ORIGIN {{ item.name }}.
+$TTL {{ item.ttl }}
+@       IN      SOA     {{ item.soa.0.ns }}      {{ item.soa.0.mail }} (
+                        {{ item.soa.0.serial }}              ; serial
+                        {{ item.soa.0.refresh }}          ; refresh
+                        {{ item.soa.0.retry }}
+                        {{ item.soa.0.expire }} ; expire
+                        {{ item.soa.0.ttl }} ; ttl
+                        )
+; Name servers
+{% for ns in item.nameservers %}
+@                    IN      NS      {{ ns }}
+{% endfor %}
+
+{% for record in item.records %}
+{% if record.type == 'TXT' %}
+{{ record.name }}                 IN      {{ record.type }}       "{{ record.value }}"
+{% else %}
+{{ record.name }}                 IN      {{ record.type }}       {{ record.value }}
+{% endif %}
+{% endfor %}

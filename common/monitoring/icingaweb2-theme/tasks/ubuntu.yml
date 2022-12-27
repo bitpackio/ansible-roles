@@ -1,0 +1,15 @@
+---
+- name: Download theme modules from github
+  git:
+    repo: "https://github.com/Icinga/icingaweb2-theme-{{ item.name }}.git"
+    dest: "{{ theme_modules_dir }}/{{ item.name }}"
+    update: no
+    version: "{{ item.version }}"
+  loop: "{{ theme_modules }}"
+  ignore_errors: yes
+  tags: minimal
+
+- name: enable modules
+  shell: "icingacli module enable {{ item.name }}"
+  loop: "{{ theme_modules }}"
+  tags: minimal

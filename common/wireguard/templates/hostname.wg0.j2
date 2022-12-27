@@ -1,0 +1,5 @@
+wgport {{ wg_port }} wgkey {{ wg_key.content|b64decode }}
+{% for peer in wg_peers %}
+wgpeer {{ peer.pubkey }} {% for allowed_net in peer.allowed_nets %} wgaip {{ allowed_net }} {% endfor %}
+{{ wg_net }}
+{% endfor %}

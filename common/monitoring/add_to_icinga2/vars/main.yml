@@ -1,0 +1,2 @@
+icinga2_api_url: "https://{{ icinga2_monitoring_master.host }}:{{ icinga2_monitoring_master.api_port }}"
+monitored_tcp_ports: "{% if tcp_port_monitoring.autodetect_ports %} {{ ansible_local.listening_tcp }} {% else %} {{ tcp_port_monitoring.no_autodetect_port_list }} {% endif %}"

@@ -1,0 +1,9 @@
+cronjobs:
+    - name: "hourly cronjob"
+      user: root
+      command: "echo Hi, I'm an hourly cronjob"
+      minute: "0"
+      hour: "*"
+      day: "*"
+      month: "*"
+      weekday: "*"

@@ -1,0 +1,30 @@
+---
+modules_dir: "/usr/share/icingaweb2/modules"
+
+modules:
+  - name: reactbundle
+    version: v0.7.0
+  - name: ipl
+    version: v0.4.0
+  - name: incubator
+    version: v0.5.0
+  - name: director
+    version: v1.7.1
+  - name: vspheredb
+    version: v1.0.3
+
+packages:
+  - rh-php71-php-process
+  - rh-php71-php-soap
+  - git
+  - python2-PyMySQL
+
+mysql_dbs:
+  - name: director
+    user: director 
+    password: director
+    schema: "{{ modules_dir }}/director/schema/mysql.sql"
+  - name: vspheredb
+    user: vspheredb
+    password: vspheredb
+    schema: "{{ modules_dir }}/vspheredb/schema/mysql.sql"

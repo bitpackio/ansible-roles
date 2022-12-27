@@ -1,0 +1,64 @@
+bootstrap_hostname: "{{ inventory_hostname }}"
+bootstrap_domain: ansible.local
+
+bootstrap_shell:
+  ubuntu: /bin/bash
+  debian: /bin/bash
+  openbsd: /bin/ksh
+  alpine: /bin/ash
+  archlinux: /bin/bash
+
+bootstrap_groups:
+  ubuntu: sudo
+  debian: sudo
+  openbsd: wheel
+  alpine: wheel
+  archlinux: wheel
+
+
+bootstrap_users:
+  - name: ansible
+    shell: "{{ bootstrap_shell[ansible_distribution|lower] }}"
+    groups: "{{ bootstrap_groups[ansible_distribution|lower] }}"
+    state: present
+    authorized_keys: 
+      - "{{ lookup('file', ansible_ssh_public_key_file) }}"
+
+bootstrap_packages:
+  ubuntu:
+    - name: tcpdump
+      state: present
+    - name: htop
+      state: present
+    - name: tmux
+      state: present
+    - name: strace
+      state: present
+    - name: postfix
+      state: present
+    - name: mailutils
+      state: present
+  openbsd:
+    - name: vim--no_x11
+      state: present
+  alpine:
+    - name: vim
+      state: present
+  archlinux:
+    - name: vim
+      state: present
+  debian:
+    - name: tcpdump
+      state: present
+    - name: htop
+      state: present
+    - name: tmux
+      state: present
+    - name: strace
+      state: present
+    - name: postfix
+      state: present
+    - name: mailutils
+      state: present
+
+bootstrap_root_mail: root@localhost

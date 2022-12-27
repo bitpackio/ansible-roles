@@ -1,0 +1,31 @@
+---
+- name: check if wireguard key exists
+  stat:
+    path: /etc/wireguard/key
+  register: key_exists
+
+- name: ensure wireguard directory exists
+  file:
+    path: /etc/wireguard
+    state: directory
+    mode: 0700
+
+- name: create key
+  shell: openssl rand -base64 32 > /etc/wireguard/key
+  when: key_exists.stat.exists == False
+
+- name: ensure key has the right permissions
+  file:
+    path: /etc/wireguard/key
+    mode: '0600'
+
+- name: slurp private key
+  slurp:
+    src: /etc/wireguard/key
+  register: wg_key
+
+- name: write wireguard interface config
+  template:
+    src: hostname.wg0.j2
+    dest: "/etc/hostname.{{ wg_if }}"
+  notify: openbsd-wg-reload

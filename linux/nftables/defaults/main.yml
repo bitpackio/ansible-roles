@@ -1,0 +1,8 @@
+nftables_external_interfaces:
+  - ens3
+nftables_tcp_in:
+  - 22
+  - 80
+  - 443
+#nftables_udp_in:
+#  - 53

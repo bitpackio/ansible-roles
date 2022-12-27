@@ -1,0 +1,18 @@
+---
+- name: Create the custom resources CSINodeInfo and CSIDriver
+  command: "kubectl apply -f {{ item }}"
+  loop: 
+    - https://raw.githubusercontent.com/kubernetes/csi-api/master/pkg/crd/manifests/csidriver.yaml
+    - https://raw.githubusercontent.com/kubernetes/csi-api/master/pkg/crd/manifests/csinodeinfo.yaml
+- name: Deploy api secret yml from template
+  template:
+    src: api_secret.yml
+    dest: /root/hcloud_api_secret.yml
+- name: Create api secret
+  command: kubectl apply -f /root/hcloud_api_secret.yml
+- name: Delete api secret file
+  file:
+    state: absent
+    path: /root/hcloud_api_secret.yml
+- name: Deploy CSI driver
+  command: kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/master/deploy/kubernetes/hcloud-csi.yml

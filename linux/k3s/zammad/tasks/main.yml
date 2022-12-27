@@ -1,0 +1,27 @@
+- name: Add zammad chart repo
+  kubernetes.core.helm_repository:
+    name: zammad
+    repo_url: "https://zammad.github.io/zammad-helm"
+
+- name: Deploy latest version of zammad chart inside zammad namespace with values
+  kubernetes.core.helm:
+    name: zammad
+    chart_ref: zammad/zammad
+    release_namespace: zammad
+    create_namespace: yes
+    values:
+      ingress:
+        annotations:
+          kubernetes.io/ingress.class: traefik
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+        enabled: true 
+        hosts:
+          - host: "{{ zammad_fqdn }}"
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: zammad-tls
+            hosts:
+               - "{{ zammad_fqdn }}"

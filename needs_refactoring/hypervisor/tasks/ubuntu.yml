@@ -1,0 +1,11 @@
+---
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - "qemu-kvm" 
+    - "libvirt-bin" 
+    - "ubuntu-vm-builder" 
+    - "bridge-utils"
+    - "virtinst"

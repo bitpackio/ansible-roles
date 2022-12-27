@@ -1,0 +1,107 @@
+---
+- name: add icingaweb2 repo key
+  apt_key:
+    url: "{{ icingaweb2_repo.key.url }}"
+    state: present
+  ignore_errors: yes
+
+- name: add icingaweb2 repo
+  apt_repository:
+    repo: "{{ icingaweb2_repo.repo }}"
+    state: present
+
+- name: install packages
+  package:
+    name: "{{ item }}"
+  loop: "{{ icingaweb2_packages }}"
+
+- name: enable and start systemd service
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ icingaweb2_systemd_services }}"
+
+- name: add icingaweb2 group
+  group:
+    name: "{{ icingaweb2_group.name }}"
+    system: yes
+    state: present
+
+- name: ensure icingaweb2 user is in icingaweb2 group
+  user:
+    name: "{{ icingaweb2_user.name }}"
+    groups: "{{ icingaweb2_user.groups }}"
+    state: present
+
+- name: create icingaweb2 mysql db
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icingaweb2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: present
+    target: "{{ icingaweb2_mysql_db.schema }}"
+  register: db_created
+
+- name: import mysql schema
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: import
+    target: "{{ icingaweb2_mysql_db.schema }}"
+  when: db_created.changed
+
+- name: create mysql users
+  mysql_user:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icingaweb2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.user }}"
+    password: "{{ icingaweb2_mysql_db.password }}"
+    priv: "{{ icingaweb2_mysql_db.name }}.*:ALL"
+    state: present
+
+- name: deploy /etc/icingaweb2 skeleton files
+  synchronize:
+    src: etc/icingaweb2/
+    dest: /etc/icingaweb2/
+
+- name: configure icingaweb2 resources
+  template:
+    src: resources.ini
+    dest: /etc/icingaweb2/resources.ini
+
+- name: configure icingaweb2 command transport
+  template:
+    src: commandtransports.ini
+    dest: /etc/icingaweb2/modules/monitoring/commandtransports.ini
+
+- name: copy sql script for icingaweb2 user creation
+  template:
+    src: icingaweb-admin.sql
+    dest: /tmp/icingaweb-admin.sql
+
+- name: create icingaweb2 admin user
+  mysql_db:
+    login_host: "{{ icingaweb2_mysql_auth.host }}"
+    login_user: "{{ icingaweb2_mysql_auth.user }}"
+    login_password: "{{ icinga2_mysql_auth.password }}"
+    name: "{{ icingaweb2_mysql_db.name }}"
+    state: import
+    target: /tmp/icingaweb-admin.sql
+  ignore_errors: yes
+
+- name: enable icingaweb2 modules
+  command: "icingacli module enable {{ item }}"
+  loop: "{{ icingaweb2_modules }}"
+
+- name: set permission on /etc/icingaweb2
+  file:
+    path: /etc/icingaweb2
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: icingaweb2

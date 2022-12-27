@@ -1,0 +1,15 @@
+---
+- name: enable and start iscsid
+  systemd:
+    state: started
+    enabled: yes
+    name: iscsid
+- name: check if openebs is installed
+  command: helm status openebs
+  register: openebs_installed
+  ignore_errors: yes
+- name: install openebs helm chart
+  local_action: helm install --namespace openebs --name openebs stable/openebs
+  when: openebs_installed.rc != 0
+- name: make openebs-hostpath default storageclass
+  command: "kubectl patch storageclass openebs-hostpath -p '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}'"

@@ -1,0 +1,14 @@
+- name: setup cronjobs
+  become: yes
+  cron:
+    name: "{{ cronjob.name }}"
+    user: "{{ cronjob.user }}"
+    job: "{{ cronjob.command }}"
+    minute: "{{ cronjob.minute }}"
+    hour: "{{ cronjob.hour }}"
+    day: "{{ cronjob.day }}"
+    month: "{{ cronjob.month }}"
+    weekday: "{{ cronjob.weekday }}"
+  loop: "{{ cronjobs }}"
+  loop_control:
+    loop_var: cronjob

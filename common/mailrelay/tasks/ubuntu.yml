@@ -1,0 +1,32 @@
+- name: install libsasl2-modules
+  package:
+    name: libsasl2-modules
+    state: latest
+
+- name: deploy mail relay secrets
+  template:
+    src: postfix_secrets
+    dest: /etc/postfix/secrets
+    owner: root
+    group: root
+    mode: 0600
+  notify: postmap
+
+- name: configure mailrelay
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - line: "relayhost = [{{ mailrelay_host }}]:{{ mailrelay_port }}"
+      regexp: '^(\s*)relayhost(\s*)=.*$'
+    - line: "smtp_sasl_auth_enable = yes"
+      regexp: '^(\s*)smtp_sasl_auth_enable(\s*)=.*$'
+    - line: "smtp_sasl_password_maps = hash:/etc/postfix/secrets"
+      regexp: '^(\s*)smtp_sasl_password_maps(\s*)=.*$'
+    - line: "smtp_sasl_security_options = noanonymous"
+      regexp: '^(\s*)smtp_sasl_security_options(\s*)=.*$'
+    - line: "inet_interfaces = 127.0.0.1"
+      regexp: '^(\s*)inet_interfaces(\s*)=.*$'
+  notify: postfix_reload

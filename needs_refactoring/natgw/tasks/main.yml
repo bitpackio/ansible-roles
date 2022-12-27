@@ -1,0 +1,4 @@
+---
+- name: OpenBSD NAT Gateway
+  import_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'

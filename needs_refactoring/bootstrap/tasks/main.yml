@@ -1,0 +1,12 @@
+---
+- name: OpenBSD ansible bootstrap
+  import_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+- name: ubuntu ansible bootstrap
+  import_tasks: ubuntu.yml
+  when: ansible_distribution|lower == 'ubuntu'
+- name: arch linux ansible bootstrap
+  import_tasks: arch.yml
+  when: ansible_distribution|lower == 'archlinux'
+- name: Common ansible bootstrap
+  import_tasks: common.yml

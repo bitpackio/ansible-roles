@@ -1,0 +1,57 @@
+dns_zone_public: "mydomain.org"
+dns_zone_local: "mydomain.local"
+dns_server_public_ip: "{{ ansible_default_ipv4.address }}"
+dns_server_local_ip: "127.0.0.1"
+dns_zones:
+    - name: "{{ dns_zone_public }}"
+      role: "master"
+      reverse_zone: False
+      peers: ""
+      ttl: "2d"
+      slaves:
+        - 213.239.242.238
+        - 213.133.105.6
+        - 193.47.99.3
+      soa:
+        - ns: "ns.{{ dns_zone_public }}."
+          mail: "admin.{{ dns_zone_public }}."
+          serial: "2018122520"
+          refresh: "1d"
+          retry: "1d"
+          expire: "4w"
+          ttl: "1h"
+      nameservers:
+        - "ns.{{ dns_zone_public }}."
+      records:
+        - name: "ns"
+          type: "A"
+          value: "{{ dns_server_public_ip }}"
+        - name: "*"
+          type: "A"
+          value: "{{ dns_server_public_ip }}"
+        - name: "vmhost"
+          type: "CNAME"
+          value: "ns"
+    - name: "{{ dns_zone_local }}"
+      role: "master"
+      reverse_zone: True
+      ttl: "2d"
+      slaves:
+        - "{{ dns_server_local_ip }}"
+      soa:
+        - ns: "ns.{{ dns_zone_local }}."
+          mail: "admin.{{ dns_zone_public }}."
+          serial: "2018121520"
+          refresh: "1d"
+          retry: "1d"
+          expire: "4w"
+          ttl: "1h"
+      nameservers:
+        - "ns.{{ dns_zone_local }}"
+      records:
+        - name: "ns"
+          type: "A"
+          value: "{{ dns_server_local_ip }}"
+        - name: "git"
+          type: "A"
+          value: "10.1.0.10"

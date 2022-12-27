@@ -1,0 +1,26 @@
+- name: installing "{{ item }}"
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libvirt
+    - ebtables
+    - dnsmasq
+    - bridge-utils
+    - openbsd-netcat
+- name: start libvirtd
+  service:
+    name: libvirtd
+    state: started
+- name: allow incoming INPUT traffic on virbr0
+  iptables:
+    chain: INPUT
+    jump: ACCEPT
+    in_interface: virbr0
+- name: allow incoming FORWARD traffic on virbr0
+  iptables:
+    chain: FORWARD 
+    jump: ACCEPT
+    in_interface: virbr0
+  with_items:
+    - 22

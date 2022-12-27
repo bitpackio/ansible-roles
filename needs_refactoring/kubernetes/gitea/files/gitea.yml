@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitea
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: git-data-claim
+  labels:
+    app: gitea
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea-deployment
+  labels:
+    app: gitea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      containers:
+      - name: gitea
+        image: gitea/gitea:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 3000
+          name: gitea
+        - containerPort: 22
+          name: git-ssh
+        volumeMounts:
+        - mountPath: /data
+          name: git-data
+        env:
+        - name: USER_UID
+          value: "1000"
+        - name: USER_GID
+          value: "1000"
+        - name: LOCAL_ROOT_URL
+          value: "http://gitea-external.gitea.svc.cluster.local:3000"
+      volumes:
+      - name: git-data
+        persistentVolumeClaim:
+            claimName: git-data-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-external
+spec:
+  ports:
+  - name: gitea
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  - name: git-ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    app: gitea
+  sessionAffinity: None
+  type: LoadBalancer

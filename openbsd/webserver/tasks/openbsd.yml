@@ -1,0 +1,44 @@
+---
+- name: acme-client.conf
+  template:
+    src: acme-client.conf
+    dest: /etc/acme-client.conf
+    owner: root
+    group: wheel
+    mode: 0640
+  when: webserver_tls
+- name: tls key and certificate
+  stat:
+    path: "{{ item }}"
+  with_items:
+    - "{{ webserver_tls_certificate }}"
+    - "{{ webserver_tls_key }}"
+  register: st_tls
+- name: httpd.conf
+  template:
+    src: httpd.conf
+    dest: /etc/httpd.conf.default
+    owner: root
+    group: wheel
+    mode: 0640
+  notify: reload httpd
+- name: httpd enabled and started
+  service:
+    name: httpd
+    state: started
+    enabled: true
+- name: run acme-client
+  command: "acme-client -f /etc/acme-client.conf {{ webserver_fqdn }}" 
+  when: webserver_tls and webserver_letsencrypt
+  notify: reload httpd
+  register: cert_update
+  failed_when: cert_update.rc == 1
+  changed_when: cert_update.rc == 0
+- name: acme-client cronjob
+  cron:
+    name: "run acme-client"
+    minute: "0"
+    hour: "3"
+    user: root
+    job: "acme-client -f /etc/acme-client.conf {{ webserver_fqdn }}"
+  when: webserver_tls and webserver_letsencrypt

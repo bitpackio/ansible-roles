@@ -1,0 +1,9 @@
+---
+- name: install metallb
+  command: kubectl apply -f https://raw.githubusercontent.com/google/metallb/master/manifests/metallb.yaml
+- name: deploy config map from template
+  template:
+    src: configmap.yml
+    dest: /root/metallb-configmap.yml
+- name: apply config map
+  command: kubectl apply -f /root/metallb-configmap.yml

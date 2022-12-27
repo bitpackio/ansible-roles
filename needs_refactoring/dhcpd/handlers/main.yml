@@ -1,0 +1,13 @@
+---
+- name: restart dhcpd
+  service:
+    name: dhcpd
+    state: restarted
+- name: update dhcpd.conf
+  template:
+    src: dhcpd.conf
+    dest: /etc/dhcpd.conf
+    owner: root
+    group: wheel
+    mode: 640
+  notify: restart dhcpd

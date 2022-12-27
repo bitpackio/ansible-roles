@@ -1,0 +1,45 @@
+---
+- name: arch linux wireguard setup
+  import_tasks: arch.yml
+  when: ansible_distribution|lower == 'archlinux'
+
+- name: ubuntu linux wireguard setup
+  import_tasks: ubuntu.yml
+  when: ansible_distribution|lower == 'ubuntu'
+
+- name: check if key exists
+  stat:
+    path: /etc/wireguard/key
+  register: key_exists
+
+- name: create keys
+  shell: wg genkey | tee /etc/wireguard/key | wg pubkey > /etc/wireguard/pubkey
+  when: key_exists.stat.exists == False
+
+- name: read private key into variable
+  shell: cat /etc/wireguard/key
+  register: wg_private_key
+
+- name: deploy systemd wg interface config
+  template:
+    src: 30-wg0.netdev.jinja2
+    dest: /etc/systemd/network/30-wg0.netdev
+    owner: systemd-network
+    mode: 0600
+  notify: wg-reload
+
+- name: deploy systemd network configuration
+  template:
+    src: 30-wg0.network.jinja2
+    dest: /etc/systemd/network/30-wg0.network
+    owner: systemd-network
+    mode: 0600
+  notify: wg-reload
+
+- name: get pubkey
+  shell: cat /etc/wireguard/pubkey
+  register: wg_pubkey
+
+- name: print pubkey
+  debug:
+    var: wg_pubkey.stdout_lines

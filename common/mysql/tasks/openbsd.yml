@@ -1,0 +1,38 @@
+---
+- name: install packages
+  package:
+    name: "{{ mysql_packages_openbsd }}"
+
+- name: check if database already exists
+  stat:
+    path: /var/mysql
+  register: db_exists
+
+- name: initialize database
+  command: /usr/local/bin/mysql_install_db
+  when: not db_exists.stat.exists
+
+- name: reload facts
+  setup:
+
+- name: enable and start mysqld
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: change mysql root password
+  mysql_user:
+    name: root
+    login_unix_socket: /var/run/mysql/mysql.sock
+    host: "{{ item }}"
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+  loop:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost

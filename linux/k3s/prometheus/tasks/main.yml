@@ -1,0 +1,65 @@
+- name: Add prometheus-community chart repo
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: "https://prometheus-community.github.io/helm-charts"
+
+- name: Deploy latest version of kube-prometheus-stack chart inside monitoring namespace with values
+  kubernetes.core.helm:
+    name: prometheus-stack
+    chart_ref: prometheus-community/kube-prometheus-stack
+    chart_version: "{{ k3s_prometheus_chart_version }}"
+    release_namespace: monitoring
+    create_namespace: yes
+    values:
+      alertmanager:
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: "{{ k3s_prometheus_alertmanager.ingress_enabled }}"
+          paths:
+            - "/"
+          hosts:
+            - "{{ k3s_prometheus_alertmanager.fqdn }}"
+          tls:
+            - secretName: alertmanager-tls
+              hosts:
+                 - "{{ k3s_prometheus_alertmanager.fqdn }}"
+      alertmanagerSpec:
+        externalUrl: "https://{{ k3s_prometheus_alertmanager.fqdn }}/"
+        routePrefix: /
+      grafana:
+        adminPassword: "{{ k3s_prometheus_grafana.admin_password }}"
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: "{{ k3s_prometheus_grafana.ingress_enabled }}"
+          hosts:
+            - "{{ k3s_prometheus_grafana.fqdn }}"
+          paths:
+            - "/"
+          tls:
+            - secretName: grafana-tls
+              hosts:
+                 - "{{ k3s_prometheus_grafana.fqdn }}"
+      prometheus:
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: "{{ k3s_prometheus.ingress_enabled }}"
+          hosts:
+            - "{{ k3s_prometheus.fqdn }}"
+          paths:
+            - "/"
+          tls:
+            - secretName: prometheus-tls
+              hosts:
+                 - "{{ k3s_prometheus.fqdn }}"
+      prometheusSpec:
+        externalUrl: "https://{{ k3s_prometheus.fqdn }}/"
+        routePrefix: /

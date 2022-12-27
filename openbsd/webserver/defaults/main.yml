@@ -1,0 +1,13 @@
+---
+webserver_fqdn: "{{ ansible_fqdn }}"
+webserver_tls: False
+webserver_letsencrypt: False
+webserver_tls_certificate: "/etc/ssl/{{ webserver_fqdn }}.fullchain.pem"
+webserver_tls_key: "/etc/ssl/private/{{ webserver_fqdn }}.key"
+webserver_letsencrypt_staging: True
+webserver_tls_alternative_names:
+  - "another.domain.tld"
+webserver_htpasswd_users:
+    - name: username
+      password: XXXXXX
+      state: present

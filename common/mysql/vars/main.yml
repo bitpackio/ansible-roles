@@ -1,0 +1,11 @@
+mysql_packages_openbsd:
+  - py3-pymysql
+  - mariadb-server
+  - mariadb-client
+mysql_packages:
+  - python3-mysqldb
+  - mysql-server
+  - mysql-client
+mysql_systemd_services:
+  - mysql
+

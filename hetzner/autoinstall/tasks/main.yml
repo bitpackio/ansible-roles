@@ -1,0 +1,56 @@
+- name: bootstrap fully encrypted linux image
+  when: hetzner_autoinstall
+  notify: unlock_disk
+  block:
+  - name: copy setup.conf template
+    template:
+      src: setup.conf
+      dest: "{{ autoinstall_setup_conf_dest }}"
+  
+  - name: copy post install script
+    template:
+      src: post-install.sh
+      dest: "{{ autoinstall_post_install_dest }}"
+      owner: root
+      mode: "0755"
+  
+  - name: copy authorized_keys
+    copy:
+      src: "{{ autoinstall_authorized_keys_src }}"
+      dest: "{{ autoinstall_authorized_keys_dest }}"
+  
+  - name: run autoinstall
+    shell: "/root/.oldroot/nfs/install/installimage -a -c {{ autoinstall_setup_conf_dest }} -x {{ autoinstall_post_install_dest }}"
+
+  - name: reboot
+    reboot:
+
+  - name: flush handlers
+    meta: flush_handlers
+
+  - name: gather facts
+    setup:
+
+- name: configure additional interfaces (debian)
+  template:
+    dest: "/etc/network/interfaces.d/{{ interface }}.cfg"
+    src: interface-config
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  loop: "{{ autoinstall_interfaces }}"
+  loop_control:
+    loop_var: interface
+  register: debian_interfaces
+  when: 
+  - '"ens" in interface'
+  - interface != "ens3" 
+  - ansible_distribution|lower == "debian"
+
+- name: restart networking service
+  become: yes
+  service:
+    name: networking
+    state: restarted
+  when: debian_interfaces.changed

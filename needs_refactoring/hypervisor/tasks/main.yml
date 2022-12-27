@@ -1,0 +1,10 @@
+---
+- name: OpenBSD vmm configuration
+  import_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'
+- name: Ubuntu libvirt configuration
+  import_tasks: ubuntu.yml
+  when: ansible_distribution|lower == 'ubuntu'
+- name: arch linux libvirt configuration
+  import_tasks: arch.yml
+  when: ansible_distribution|lower == 'archlinux'

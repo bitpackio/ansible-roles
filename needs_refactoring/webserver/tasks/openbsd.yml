@@ -1,0 +1,41 @@
+---
+- name: acme-client.conf
+  template:
+    src: acme-client.conf
+    dest: /etc/acme-client.conf
+    owner: root
+    group: wheel
+    mode: 0640
+  when: tls
+- name: tls key and certificate
+  stat:
+    path: "{{ item }}"
+  with_items:
+    - "{{ tls_certificate }}"
+    - "{{ tls_key }}"
+  register: st_tls
+- name: httpd.conf
+  template:
+    src: httpd.conf
+    dest: /etc/httpd.conf
+    owner: root
+    group: wheel
+    mode: 0640
+  notify: reload httpd
+- name: httpd enabled and started
+  service:
+    name: httpd
+    state: started
+    enabled: true
+- name: run acme-client
+  command: "acme-client -A -D -f /etc/acme-client.conf {{ fqdn }}" 
+  when: tls
+  notify: reload httpd
+- name: acme-client cronjob
+  cron:
+    name: "run acme-client"
+    minute: 0
+    hour: 3
+    user: root
+    job: "acme-client -A -D -f /etc/acme-client.conf {{ fqdn }}"
+  when: tls

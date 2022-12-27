@@ -1,0 +1,10 @@
+helm_handler_repos:
+  - name: some repo name
+    url: some repo url
+helm_handler_charts:
+  - name: some_chart_name
+    ref: some_repo/some_chart_name
+    namespace: some_namespace
+    version: some_chart_version
+    values:
+      values_key: values_value

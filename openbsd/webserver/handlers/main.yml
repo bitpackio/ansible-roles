@@ -1,0 +1,6 @@
+---
+- name: reload httpd
+  become: yes
+  service:
+    name: httpd
+    state: reloaded

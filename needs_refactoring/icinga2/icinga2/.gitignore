@@ -1,0 +1,10 @@
+.idea/
+molecule/default/tests/__pycache__/*
+molecule/default/.molecule*
+*.test
+*.list
+*.sh
+*.ini
+*.pem
+site.yml
+tests/test.retry

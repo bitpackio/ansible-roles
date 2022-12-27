@@ -1,0 +1,4 @@
+---
+- name: OpenBSD ipsec
+  import_tasks: openbsd.yml
+  when: ansible_distribution|lower == 'openbsd'

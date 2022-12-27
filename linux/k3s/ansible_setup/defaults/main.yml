@@ -1,0 +1,4 @@
+k3s_collections_to_install:
+  - kubernetes.core
+helm_repo_arch: amd64
+ansible_home: /home/ansible

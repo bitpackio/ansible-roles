@@ -1,0 +1,27 @@
+- name: Add argocd chart repo
+  kubernetes.core.helm_repository:
+    name: argo
+    repo_url: "https://argoproj.github.io/argo-helm"
+
+- name: Deploy latest version of argocd chart inside argocd namespace with values
+  kubernetes.core.helm:
+    name: argocd 
+    chart_ref: argo/argo-cd
+    release_namespace: argocd
+    create_namespace: yes
+    values:
+      server:
+        extraArgs:
+          - "--insecure"
+        ingress:
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+          enabled: true 
+          hosts:
+            - "{{ argocd_fqdn }}"
+          tls:
+            - secretName: argocd-tls
+              hosts:
+                 - "{{ argocd_fqdn }}"

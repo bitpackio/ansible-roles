@@ -1,0 +1,13 @@
+firewall_tcp_services:
+    - 80
+    - 443
+firewall_udp_services:
+    - 53
+firewall_max_ssh_src_conn: "35"
+firewall_max_ssh_src_conn_rate: "25/5"
+firewall_max_tcp_src_conn: "150"
+firewall_max_tcp_src_conn_rate: "100/5"
+
+firewall_whitelist_enable: false
+firewall_whitelist:
+    - 127.0.0.1

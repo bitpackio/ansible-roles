@@ -1,0 +1,126 @@
+---
+- name: ensure upobsd is installed
+  community.general.openbsd_pkg:
+    name: upobsd
+    state: present
+    snapshot: "{{ force_openbsd_snapshot | default(false) }}"
+- name: network configuration
+  template:
+    src: "hostname.if"
+    dest: "/etc/hostname.{{ item.name }}"
+    owner: root
+    group: wheel
+    mode: "0640"
+  with_items:
+    - "{{ vm_interfaces }}"
+  when: interfaces is defined
+  notify: reload network
+- name: vm directory
+  file:
+    path: "{{ vm_dir }}"
+    state: directory
+    mode: 0700
+    owner: _vmd
+- name: vm specific site package on mirror
+  copy:
+    src: site.tgz
+    dest: "{{ mirror_root }}/{{ item.0 }}/site{{ item.1.os_version | replace('.','') }}.tgz"
+  when: item.1.os_version in item.0
+  with_nested:
+    - "{{ mirror_targets }}"
+    - "{{ vms }}"
+- name: update OpenBSD mirror index.txt
+  shell: "cd {{ mirror_root }}/{{ item.0 }}/ && ls -ln > index.txt"
+  when: item.1.os_version in item.0
+  with_nested:
+    - "{{ mirror_targets }}"
+    - "{{ vms }}"
+- name: calculate vm mac addresses
+  shell: echo {{ item.0.name }} {{ item.1.network }}|md5|sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/02:\1:\2:\3:\4:\5/'
+  with_subelements:
+    - "{{ vms }}"
+    - interfaces
+  register: vm_lladdr
+  tags: vm.conf,lladdr
+- name: prepare dhcpd lease
+  set_fact:
+    static: "{{ static|default([]) +  [{ 'host': item.item.0.name, 'lladdr': item.stdout, 'ip': item.item.1.ip, 'network': item.item.1.network }]  }}"
+  with_items: 
+    - "{{ vm_lladdr.results }}"
+  tags: lladdr
+  changed_when: True
+  notify: update dhcpd.conf
+- name: debug 
+  debug: "msg={{ static }}"
+  tags: lladdr
+- name: vm disks 
+  stat:
+    path: "{{ vm_dir }}/{{ item.1.name }}"
+    get_checksum: False
+    get_md5: False
+    get_mime: False
+    get_attributes: False
+  with_subelements:
+    - "{{ vms }}"
+    - disks
+  register: st_disks
+- name: create vm disks
+  command: "doas -u _vmd vmctl create {{ vm_dir }}/{{ item.item.1.name }} -s {{ item.item.1.size }}"
+  when: not item.stat.exists
+  with_items:
+    - "{{ st_disks.results }}"
+- name: create auto_intall.conf from template
+  template:
+    src: auto_install.conf
+    dest: /tmp/auto_install.conf-{{ item.item.0.name }}
+  when: not item.stat.exists
+  with_items:
+    - "{{ st_disks.results }}"
+- name: gather vms to create
+  find:
+    paths: /tmp/
+    patterns: auto_install.conf-*
+  register: auto_install_vms
+- name: create custom ramdisk for vm bootstrap
+  command: "upobsd -V {{ item.0.os_version }} -i {{ item.1.path }} -o /home/vm/bsd.rd-{{ item.0.name }}"
+  when: item.0.name in item.1.path
+  with_nested:
+    - "{{ vms }}"
+    - "{{ auto_install_vms.files }}"
+- name: vm.conf
+  template:
+    src: vm.conf
+    dest: /etc/vm.conf
+    owner: root
+    group: wheel
+    mode: '0640'
+  tags: vm.conf
+  notify: reload vmd
+- name: reload vmd
+  service:
+    name: vmd
+    state: reloaded
+    enabled: true
+  when: auto_install_vms is defined
+- name: bootstrap vm
+  shell: "vmctl start {{ item.0.name }}-bootstrap -b /home/vm/bsd.rd-{{ item.0.name }} -d {{ vm_dir }}/{{ item.0.disks.0.name }} -n {{ item.0.interfaces.0.network }} && while ps auxww |grep \"vmd: {{ item.0.name }}-bootstrap\" | grep -v grep; do sleep 1; done"
+  when: item.0.name in item.1.path
+  with_nested:
+    - "{{ vms }}"
+    - "{{ auto_install_vms.files }}"
+  notify: bootstrap done
+- name: delete temporary files
+  shell: rm -rf /tmp/auto_*
+  tags: delete
+- name: "pf rules: pass all on vm bridge interfaces"
+  lineinfile:
+    path: /etc/anchors/ansible
+    line: "pass on {{ item.interface }}"
+  with_items:
+    - "{{ vm_network }}"
+  notify: reload pf
+- name: "pf rules: pass all on tap interfaces"
+  lineinfile:
+    path: /etc/anchors/ansible
+    line: "pass on tap"
+  notify: reload pf

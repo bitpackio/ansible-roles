@@ -1,0 +1,84 @@
+---
+- name: Install dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ director_packages_openbsd }}"
+
+- name: reload facts
+  setup:
+
+- name: Download modules from github
+  git:
+    repo: "https://github.com/Icinga/icingaweb2-module-{{ item.name }}.git"
+    dest: "{{ director_modules_dir_openbsd }}/{{ item.name }}"
+    update: no
+    version: "{{ item.version }}"
+  loop: "{{ director_modules }}"
+  ignore_errors: yes
+  tags: minimal
+
+- name: enable modules
+  shell: "icingacli module enable {{ item.name }}"
+  loop: "{{ director_modules }}"
+  tags: minimal
+
+- name: create mysql dbs
+  mysql_db:
+    login_host: "{{ director_mysql_auth.host }}"
+    login_user: "{{ director_mysql_auth.user }}"
+    login_password: "{{ director_mysql_auth.password }}"
+    name: "{{ item.name }}"
+    state: present
+    target: "{{ item.schema_openbsd }}"
+  loop: "{{ director_mysql_dbs }}"
+  register: dbs_created
+- name: import mysql schema
+  mysql_db:
+    login_host: "{{ director_mysql_auth.host }}"
+    login_user: "{{ director_mysql_auth.user }}"
+    login_password: "{{ director_mysql_auth.password }}"
+    name: "{{ item.name }}"
+    state: import
+    target: "{{ item.schema_openbsd }}"
+  loop: "{{ director_mysql_dbs }}"
+  when: dbs_created.changed
+
+- name: create mysql users
+  mysql_user:
+    login_host: "{{ director_mysql_auth.host }}"
+    login_user: "{{ director_mysql_auth.user }}"
+    login_password: "{{ director_mysql_auth.password }}"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.name }}.*:ALL"
+    state: present
+  loop: "{{ director_mysql_dbs }}"
+
+- name: create icingaweb2 resource
+  ini_file:
+    path: /var/www/etc/icingaweb2/resources.ini
+    section: "{{ item.name }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop: "{{ director_icingaweb_resources }}"
+
+- name: create icingadirector user
+  user:
+    name: "{{ director_user.name }}"
+    group: "{{ director_user.group }}"
+    home: "{{ director_user.home }}"
+    shell: "{{ director_user.shell }}"
+    create_home: yes
+
+- name: ensure icinga director config dir exists
+  file:
+    path: /var/www/etc/icingaweb2/modules/director
+    state: directory
+
+- name: copy icinga director config.ini
+  copy:
+    src: config.ini
+    dest: /var/www/etc/icingaweb2/modules/director/config.ini
+    owner: www-data
+    group: icingaweb2

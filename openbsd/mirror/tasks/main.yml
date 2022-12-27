@@ -1,0 +1,26 @@
+---
+- name: mirror directories
+  become: yes
+  file:
+    path: "{{ mirror_root }}/{{ item }}"
+    owner: www
+    group: daemon
+    state: directory
+    recurse: yes
+  with_items:
+    - "{{ mirror_targets }}"
+- name: rsync
+  become: yes
+  community.general.openbsd_pkg:
+    name: rsync--
+    state: present
+    snapshot: "{{ force_openbsd_snapshot | default(false) }}"
+- name: synchronize mirror
+  become: yes
+  synchronize:
+    mode: pull
+    src: "rsync://{{ mirror }}/{{ item }}/"
+    dest: "{{ mirror_root }}/{{ item }}/"
+  delegate_to: "{{ inventory_hostname }}"
+  with_items:
+    - "{{ mirror_targets }}"

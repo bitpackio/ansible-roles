@@ -1,0 +1,121 @@
+---
+- name: "install package: {{ package }}"
+  package:
+    name: "{{ package }}"
+    state: latest
+  loop: "{{ mailserver_packages[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower != 'openbsd'
+
+- name: "install package: {{ package }}"
+  community.general.openbsd_pkg:
+    name: "{{ package }}"
+    state: latest
+    snapshot: "{{ force_openbsd_snapshot|default(false) }}"
+  loop: "{{ mailserver_packages[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: package
+  when: ansible_distribution|lower == 'openbsd'
+
+- name: "create directory: {{ directory }}"
+  file:
+    path: "{{ directory.path }}"
+    state: directory
+    mode: "{{ directory.mode }}"
+  loop: "{{ mailserver_directories[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: directory
+
+- name: "template {{ cfg.path }}"
+  template:
+    src: "{{ cfg.template }}"
+    dest: "{{ cfg.path }}"
+  loop: "{{ mailserver_config_templates[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: cfg
+
+- name: "ensure {{ cfg.line }} is in {{ cfg.path }}"
+  lineinfile:
+    path: "{{ cfg.path }}"
+    line: "{{ cfg.line }}"
+    regexp: "{{ cfg.regexp }}"
+  loop: "{{ mailserver_config_insertions[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: cfg
+  register: mailserver_config_task
+
+- name: "setup mail users"
+  user:
+    name: "{{ user.name }}"
+    password: "{{ user.password }}"
+    state: "{{ user.state }}"
+    shell: "{{ user.shell }}"
+    update_password: always
+  loop: "{{ mailserver_users }}"
+  loop_control:
+    loop_var: user
+  tags:
+    - mailserver_users
+
+- name: "ensure aliases are present"
+  lineinfile:
+    path: "{{ mailserver_aliases_file_path[ ansible_distribution|lower ] }}"
+    line: "{{ alias.key }}: {{ alias.value }}"
+    regexp: '^(\s*){{ alias.key }}(\s*):.*$'
+    state: "{{ alias.state | default('present') }}"
+  loop: "{{ mailserver_aliases }}"
+  loop_control:
+    loop_var: alias
+  notify: mailserver_reload_aliases
+  tags:
+    - mailserver_aliases
+
+- name: "generate dkim private key"
+  openssl_privatekey:
+    path: "{{ mailserver_dkim.key }}"
+    size: "{{ mailserver_dkim.size }}"
+
+- name: "generate dkim public key"
+  openssl_publickey:
+    path: "{{ mailserver_dkim.pub }}"
+    privatekey_path: "{{ mailserver_dkim.key }}"
+    mode: "0640"
+    group: "_rspamd"
+  register: dkim_pubkey_task
+
+- name: "Use slurp module to get dkim public key"
+  slurp:
+    src: "{{ mailserver_dkim.pub }}"
+  register: dkim_pubkey_base64
+
+- name: "Ensure ansible local facts dir exists"
+  file:
+    path: /etc/ansible/facts.d
+    state: directory
+
+- name: "Persist dkim pubkey as local fact."
+  copy:
+    content: "{ 'dkim_pub_key' : \"{{ (dkim_pubkey_base64['content']|b64decode|replace('\n', ''))[26:-24] }}\" }"
+    dest: /etc/ansible/facts.d/mailserver.fact
+    owner: "{{ ansible_ssh_user }}"
+    mode: "0644"
+
+- name: "start and enable: {{ service }}"
+  service:
+    name: "{{ service }}"
+    enabled: True
+    state: started
+  loop: "{{ mailserver_services[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: service 
+
+- name: "restart: {{ service }}"
+  service:
+    name: "{{ service }}"
+    enabled: True
+    state: restarted
+  when: dkim_pubkey_task.changed or mailserver_config_task.changed
+  loop: "{{ mailserver_services[ ansible_distribution|lower ] }}"
+  loop_control:
+    loop_var: service 

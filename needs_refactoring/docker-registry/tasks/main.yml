@@ -1,0 +1,10 @@
+- name: create config directory
+  file:
+    path: /etc/docker/registry
+    state: directory
+    mode: '0755'
+- name: deploy registry config
+  copy:
+    src: config.yml
+    dest: /etc/docker/registry/config.yml
+  notify: restart registry

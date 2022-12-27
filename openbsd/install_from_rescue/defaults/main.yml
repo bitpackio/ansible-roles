@@ -1,0 +1,2 @@
+openbsd_autoinstall_miniroot: autoinstall67.fs.gz
+openbsd_autoinstall_rootdisk: /dev/sda

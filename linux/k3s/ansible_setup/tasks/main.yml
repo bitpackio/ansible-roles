@@ -1,0 +1,67 @@
+- name: Add helm repo
+  become: yes
+  block:
+    - name: download helm repo key
+      ansible.builtin.get_url:
+        url: https://baltocdn.com/helm/signing.asc
+        dest: /etc/apt/trusted.gpg.d/helm.asc
+
+    - name: add helm repo as apt source
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ helm_repo_arch }} signed-by=/etc/apt/trusted.gpg.d/helm.asc] https://baltocdn.com/helm/stable/debian/ all main"
+        state: present
+      register: sources_update
+
+- name: Update apt-cache
+  become: yes
+  ansible.builtin.apt:
+    update_cache: yes
+  when: sources_update.changed
+
+- name: Install or update required packages
+  package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - python3-pip
+    - helm
+  become: yes
+
+- name: install python packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+  loop:
+    - ansible
+    - kubernetes
+
+- name: Create kube directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ ansible_home }}/.kube"
+    state: directory
+    mode: '0700'
+    owner: "{{ ansible_user }}"
+
+- name: check if k3s kube config exists
+  stat:
+    path: "{{ k3s_kube_config_path }}"
+  register: kube_config_stat
+
+- name: copy kube config to ansible home dir
+  copy:
+    src: "{{ k3s_kube_config_path }}"
+    dest: "{{ ansible_home }}/.kube/config"
+    mode: '0600'
+    owner: "{{ ansible_user }}"
+    remote_src: yes
+  become: yes
+  when: kube_config_stat.stat.exists
+
+- name: install necessary ansible collections
+  community.general.ansible_galaxy_install:
+    type: collection
+    name: "{{ collection_name }}"
+  loop: "{{ k3s_collections_to_install }}"
+  loop_control:
+    loop_var: collection_name
+  environment:
+    PATH: "$PATH:{{ ansible_home }}/.local/bin"

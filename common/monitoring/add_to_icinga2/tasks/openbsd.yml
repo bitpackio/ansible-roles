@@ -1,0 +1,97 @@
+- name: ensure facts dir exists
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /etc/ansible
+    - /etc/ansible/facts.d
+
+- name: deploy custom fact for listening tcp ports
+  become: yes
+  copy:
+    src: listening_tcp_openbsd.sh
+    dest: /etc/ansible/facts.d/listening_tcp.fact
+    mode: '0755'
+  register: fact_deploy
+
+- name: reload facts
+  setup:
+  when: fact_deploy.changed
+
+- name: print to be monitored tcp ports
+  debug:
+    msg: "{{ monitored_tcp_ports }}"
+
+- name: copy service check
+  become: yes
+  copy:
+    src: check_services_openbsd.sh
+    dest: /usr/local/libexec/nagios/check_services.sh
+    mode: '0755'
+
+- name: allow list of failed services via doas
+  become: yes
+  lineinfile:
+    path: /etc/doas.conf
+    create: yes
+    regexp: '^permit.*{{ icinga2_monitoring_master.ssh_user }}.*$'
+    line: 'permit nopass {{ icinga2_monitoring_master.ssh_user }} as root cmd /usr/sbin/rcctl args ls failed'
+
+- name: set fact with monitoring config
+  set_fact:
+    api_body: '{ "templates": [ "openbsd" ], "attrs": { "address": "{{ ansible_fqdn }}", "vars.tcp_ipv4": {{ monitored_tcp_ports }}  }, "pretty": true }'
+
+- name: write monitoring config
+  become: yes
+  copy:
+    dest: /etc/monitoring.conf
+    content: "{{ api_body }}"
+  register: monitoring_config
+
+- name: delete host from icinga
+  uri:
+    url: "{{ icinga2_api_url }}/v1/objects/hosts/{{ ansible_fqdn }}?cascade=1"
+    method: DELETE
+    return_content: yes
+    headers:
+        Accept: application/json
+    body_format: json
+    validate_certs: no
+    url_username: "{{ icinga2_monitoring_master.api_user }}"
+    url_password: "{{ icinga2_monitoring_master.api_password }}"
+  when: monitoring_config.changed
+  failed_when: false
+  changed_when: true
+  throttle: 1
+
+- name: add host to icinga
+  uri:
+    url: "{{ icinga2_api_url }}/v1/objects/hosts/{{ ansible_fqdn }}"
+    method: PUT
+    return_content: yes
+    headers:
+        Accept: application/json
+    body_format: json
+    body: "{{ api_body }}"
+    validate_certs: no
+    url_username: "{{ icinga2_monitoring_master.api_user }}"
+    url_password: "{{ icinga2_monitoring_master.api_password }}"
+  when: monitoring_config.changed
+  changed_when: true
+  throttle: 1
+
+- name: trigger icinga restart
+  uri:
+    url: "{{ icinga2_api_url }}/v1/actions/restart-process?pretty=1"
+    method: POST
+    return_content: yes
+    headers:
+        Accept: application/json
+    body_format: json
+    validate_certs: no
+    url_username: "{{ icinga2_monitoring_master.api_user }}"
+    url_password: "{{ icinga2_monitoring_master.api_password }}"
+  when: monitoring_config.changed
+  changed_when: true
+  throttle: 1

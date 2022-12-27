@@ -1,0 +1,26 @@
+- name: copy openbsd miniroot to server
+  copy:
+    src: "{{ openbsd_autoinstall_miniroot }}"
+    dest: "/tmp/miniroot.fs.gz"
+
+- name: write miniroot to disk
+  shell: "gunzip -c /tmp/miniroot.fs.gz | dd of={{ openbsd_autoinstall_rootdisk }} bs=10M"
+
+- name: clear facts and notify reboot handler
+  meta: clear_facts
+
+
+- name: set python interpreter
+  set_fact:
+    ansible_python_interpreter: /usr/local/bin/python3
+
+- name: reboot
+  raw: reboot
+
+
+- name: wait_for autoinstall to finish
+  wait_for_connection:
+    delay: 10
+
+- name: gather facts
+  setup:

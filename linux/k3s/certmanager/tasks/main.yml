@@ -1,0 +1,32 @@
+- name: Create directory for manifest storage
+  ansible.builtin.file:
+    path: "{{ certmanager_working_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: download cert-manager manifest
+  get_url:
+    url: "https://github.com/jetstack/cert-manager/releases/download/v{{ certmanager_version }}/cert-manager.yaml"
+    dest: "{{ certmanager_manifest_path }}"
+    mode: '0664'
+
+- name: apply cert-manager manifest
+  kubernetes.core.k8s:
+    apply: yes
+    src: "{{ certmanager_manifest_path }}"
+  register: cert_manager
+
+- name: wait for cert-manager deployment
+  pause:
+    seconds: 45
+  when: cert_manager.changed
+
+- name: apply letsencrypt production ClusterIssuer
+  kubernetes.core.k8s:
+    apply: yes
+    template: 'letsencrypt-prod.yml'
+
+- name: apply traefik https redirect middleware
+  kubernetes.core.k8s:
+    apply: yes
+    definition: "{{ lookup('file', 'traefik-https-redirect-middleware.yml') | from_yaml }}"

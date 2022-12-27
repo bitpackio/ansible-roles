@@ -1,0 +1,131 @@
+---
+- name: deploy custom facts 
+  copy:
+    src: "{{ item }}"
+    dest: /etc/ansible/facts.d/
+    mode: 0755
+  with_fileglob:
+    - facts.d-openbsd/*
+  notify: reload facts
+
+- name: update firewall whitelist
+  lineinfile:
+    line: '{{ item }}'
+    regexp: '^.*{{ item }}.*$'
+    path: /etc/pf.whitelist
+    create: yes
+  loop: "{{ firewall_whitelist }}"
+  when: firewall_whitelist_enable
+
+- meta: flush_handlers
+- name: anchor directory 
+  file:
+    path: "/etc/anchors"
+    state: "directory"
+- name: ansible pf anchor
+  copy:
+    dest: "/etc/anchors/ansible"
+    content: ""
+    force: no
+    owner: "root"
+    mode: "0600"
+- name: custom pf anchor
+  copy:
+    dest: "/etc/anchors/custom"
+    force: no
+    content: ""
+    owner: "root"
+    mode: "0600"
+- name: create pf-badhost user
+  user:
+    name: "{{ pfbadhost_user }}"
+    shell: /sbin/nologin
+    home: /var/empty
+    create_home: no
+- name: install ripgrep and mawk
+  community.general.openbsd_pkg:
+    name: [ "ripgrep", "mawk" ]
+    state: present
+    snapshot: "{{ force_openbsd_snapshot | default(false) }}"
+- name: download pf-badhost
+  uri:
+    url: "{{ pfbadhost_url }}"
+    dest: "{{ pfbadhost_path }}"
+    owner: root
+    group: wheel
+    mode: "0755"
+    ca_path: /etc/ssl/cert.pem
+    status_code:
+      - 200
+      - 304
+  register: pfbadhost_installed
+
+- name: enable authlog scanning
+  lineinfile:
+    path: "{{ pfbadhost_path }}"
+    regexp: '^\s+_HAIL_MARY=[01].*$'
+    line: '_HAIL_MARY=1'
+  changed_when: false
+
+- name: set doas permissions for pf-badhost
+  lineinfile:
+    path: /etc/doas.conf
+    regexp: "^{{ doas_line }}$"
+    line: "{{ doas_line }}"
+  loop:
+    - "permit nopass {{ pfbadhost_user }} cmd /sbin/pfctl args -nf /etc/pf.conf"
+    - "permit nopass {{ pfbadhost_user }} cmd /sbin/pfctl args -t pfbadhost -T replace -f /etc/pf-badhost.txt"
+    - "permit nopass {{ pfbadhost_user }} cmd /usr/bin/zcat args -f /var/log/authlog /var/log/authlog.0.gz"
+  loop_control:
+    loop_var: doas_line
+- name: create pf-badhost log dir
+  file:
+    path: /var/log/pf-badhost
+    state: directory
+    owner: root
+    group: wheel
+    mode: "0755"
+- name: create required files for pf-badhost
+  copy:
+    content: ""
+    dest: "{{ pfbadhost_required_file }}"
+    owner: "{{ pfbadhost_user }}"
+    group: wheel
+    mode: "0640"
+    force: no
+  loop:
+    - /etc/pf-badhost.txt
+    - /var/log/pf-badhost/pf-badhost.log
+    - /var/log/pf-badhost/pf-badhost.log.0.gz
+  loop_control:
+    loop_var: pfbadhost_required_file
+- name: ensure permission for pf-badhost
+  file:
+    path: "{{ pfbadhost_required_file }}"
+    owner: "{{ pfbadhost_user }}"
+    group: wheel
+    mode: "0640"
+  loop:
+    - /etc/pf-badhost.txt
+    - /var/log/pf-badhost/pf-badhost.log
+    - /var/log/pf-badhost/pf-badhost.log.0.gz
+  loop_control:
+    loop_var: pfbadhost_required_file
+- name: setup pf-badhost cronjob
+  cron:
+    name: "update pf-badhosts"
+    user: "{{ pfbadhost_user }}"
+    job: "-s pf-badhost -O openbsd"
+    minute: "~"
+    hour: "0~1"
+- name: run pf badhosts
+  command: "doas -u {{ pfbadhost_user }} pf-badhost -O openbsd"
+  when: pfbadhost_installed.changed
+- name: pf.conf
+  template:
+    src: pf.conf
+    dest: /etc/pf.conf
+    owner: root
+    group: wheel
+    mode: '0600'
+  notify: reload pf

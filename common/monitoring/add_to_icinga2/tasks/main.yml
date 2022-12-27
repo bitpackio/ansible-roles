@@ -1,0 +1,9 @@
+---
+- name: common setup
+  include: "common.yml"
+- name: ubuntu setup
+  include: "ubuntu.yml"
+  when: ansible_distribution == 'Ubuntu'
+- name: openbsd setup
+  include: "openbsd.yml"
+  when: ansible_distribution | lower == 'openbsd'

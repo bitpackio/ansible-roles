@@ -1,0 +1,12 @@
+- name: restart sshd
+  become: yes
+  service:
+    name: "{{ bootstrap_ssh_service_name[ansible_distribution|lower] }}"
+    state: restarted
+
+- name: reload facts
+  setup:
+
+- name: bootstrap_reload_aliases
+  become: yes
+  command: "{{ bootstrap_aliases_reload_command[ansible_distribution|lower] }}"

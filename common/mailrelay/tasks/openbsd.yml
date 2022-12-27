@@ -1,0 +1,17 @@
+- name: deploy mail relay secrets
+  template:
+    src: secrets
+    dest: /etc/mail/secrets
+    owner: root
+    group: _smtpd
+    mode: 0640
+  notify: smtpd_reload
+
+- name: deploy mail relay config
+  template:
+    src: smtpd.conf
+    dest: /etc/mail/smtpd.conf
+    owner: root
+    group: _smtpd
+    mode: 0640
+  notify: smtpd_reload

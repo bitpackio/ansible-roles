@@ -1,0 +1,19 @@
+---
+- name: install rsync
+  become: yes
+  package:
+    name: "{{ package }}"
+    state: present
+  loop: "{{ data_sync_packages[ansible_distribution|lower] }}"
+  loop_control:
+    loop_var: package
+- name: synchronize data dir
+  become: yes
+  synchronize:
+    src: "{{ playbook_dir }}/data/"
+    dest: "/"
+    owner: no
+    group: no
+    perms: yes
+    rsync_path: '{{ ansible_become_method }} -u root rsync'
+    copy_links: '{{ data_sync_copy_links }}'

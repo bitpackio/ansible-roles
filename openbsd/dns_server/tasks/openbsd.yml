@@ -1,0 +1,44 @@
+---
+- name: unbound.conf
+  template:
+    src: unbound.conf
+    dest: /var/unbound/etc/unbound.conf
+    owner: root
+    group: wheel
+    mode: 0644
+  notify: reload unbound
+- name: nsd.conf
+  template:
+    src: nsd.conf
+    dest: /var/nsd/etc/nsd.conf
+    owner: root
+    group: _nsd
+    mode: 0640
+  notify: reload nsd
+- name: forward zonefile(s)
+  template: 
+    src: zonefile.forward
+    dest: "/var/nsd/zones/{{ item.role }}/{{ item.name }}"
+    owner: root
+    group: _nsd
+    mode: 0640
+  loop: "{{ dns_zones }}"
+  notify: reload zonefiles
+
+- name: check zone files
+  shell: "nsd-checkzone {{ item.name }} /var/nsd/zones/{{ item.role }}/{{ item.name }}"
+  register: zone_check
+  failed_when: zone_check.rc != 0
+  changed_when: False
+  loop: "{{ dns_zones }}"
+  
+- name: nsd started and enabled
+  service:
+    name: nsd
+    state: started
+    enabled: true
+- name: unbound started and enabled
+  service:
+    name: unbound
+    state: started
+    enabled: true

@@ -1,0 +1,6 @@
+---
+- name: install required packages
+  package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ nginx_required_packages[ansible_distribution] | lower }}"

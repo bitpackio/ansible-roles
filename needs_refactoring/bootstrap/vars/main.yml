@@ -1,0 +1,4 @@
+---
+sshd_config: /etc/ssh/sshd_config
+service_account: _ansible
+ansible_ssh_public_key_file: id_rsa.pub

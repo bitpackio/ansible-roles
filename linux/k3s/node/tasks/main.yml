@@ -1,0 +1,19 @@
+- name: Install or update required packages
+  package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - apparmor
+    - apparmor-utils
+  become: yes
+  when: ansible_distribution|lower == 'debian'
+
+- name: join node to cluster control plane
+  shell: "curl -sfL https://get.k3s.io | K3S_TOKEN={{ k3s_node_token }} sh -s - server --server https://{{ k3s_master_address }}:6443 --node-ip {{ k3s_node_address }} --flannel-iface {{ k3s_node_interface }} && sleep 5"
+  when: k3s_bootstrap and k3s_control_plane
+  throttle: 1
+
+- name: join node to cluster as worker node
+  shell: "curl -sfL https://get.k3s.io | K3S_TOKEN={{ k3s_node_token }} sh -s - agent --server https://{{ k3s_master_address }}:6443 --node-ip {{ k3s_node_address }} --flannel-iface {{ k3s_node_interface }} && sleep 5"
+  when: k3s_bootstrap and not k3s_control_plane
+  throttle: 1

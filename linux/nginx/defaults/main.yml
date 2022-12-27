@@ -1,0 +1,4 @@
+---
+nginx_required_packages:
+  ubuntu: 
+    - nginx-core

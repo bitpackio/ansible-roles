@@ -1,0 +1,10 @@
+- name: restart_gitea
+  service:
+    name: gitea
+    state: restarted
+  become: yes
+- name: restart_httpd
+  service:
+    name: httpd
+    state: restarted
+  become: yes

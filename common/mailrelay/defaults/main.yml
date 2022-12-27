@@ -1,0 +1,4 @@
+mailrelay_host: "mail.1wilson.org"
+mailrelay_port: "587"
+mailrelay_user: "system-mail"
+mailrelay_password: "SomePassword"

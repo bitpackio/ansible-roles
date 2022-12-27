@@ -1,0 +1,2 @@
+---
+hcloud_token: "{{ lookup('env','HCLOUD_TOKEN') }}"
